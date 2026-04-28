@@ -53,7 +53,7 @@ export default function FinalCTA() {
             <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div className="text-left min-w-0">
-            <div className="text-blue-100/70 text-xs font-semibold uppercase tracking-widest mb-0.5">Call or Text Juan Directly</div>
+            <div className="text-blue-100/70 text-xs font-semibold uppercase tracking-widest mb-0.5">Call or Text Stephen Guerrero Directly</div>
             <div className="text-white font-bold text-xl sm:text-2xl tracking-wide">(972) 804-6456</div>
           </div>
         </div>
@@ -68,7 +68,7 @@ export default function FinalCTA() {
             className="inline-flex items-center justify-center gap-2 bg-white text-brand-600 hover:bg-brand-50 font-bold px-8 py-4 rounded-xl transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:scale-95 text-base w-full sm:w-auto min-h-[52px] btn-luxury-glow"
           >
             <Phone className="w-5 h-5" />
-            Call Juan Now
+            Call Stephen Now
           </a>
           <a
             href="#contact"

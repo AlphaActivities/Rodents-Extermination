@@ -70,9 +70,9 @@ export default function Contact() {
               <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 sm:mb-5">
                 <Phone className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
-              <h3 className="font-bold text-xl mb-2">Call Juan Directly</h3>
+              <h3 className="font-bold text-xl mb-2">Call Stephen Guerrero Directly</h3>
               <p className="text-blue-100 text-sm mb-1 leading-relaxed">
-                Calling is the fastest way to get scheduled. Juan answers personally and can walk you through your attic situation before any commitment.
+                Calling is the fastest way to get scheduled. Stephen answers personally and can walk you through your attic situation before any commitment.
               </p>
               <p className="text-blue-100/60 text-xs mb-5 sm:mb-6">Free estimates for residential and commercial attic work.</p>
               <a
