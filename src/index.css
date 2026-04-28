@@ -272,6 +272,8 @@
 .reveal-delay-3 { transition-delay: 0.24s; }
 .reveal-delay-4 { transition-delay: 0.32s; }
 .reveal-delay-5 { transition-delay: 0.40s; }
+.reveal-delay-6 { transition-delay: 0.48s; }
+.reveal-delay-7 { transition-delay: 0.56s; }
 
 /* Mobile: reduce movement distance and shorten duration */
 @media (max-width: 639px) {
@@ -286,6 +288,8 @@
   .reveal-delay-3 { transition-delay: 0.15s; }
   .reveal-delay-4 { transition-delay: 0.20s; }
   .reveal-delay-5 { transition-delay: 0.25s; }
+  .reveal-delay-6 { transition-delay: 0.30s; }
+  .reveal-delay-7 { transition-delay: 0.35s; }
 }
 
 /* ── Luxury Button Glow ───────────────────────────────────── */

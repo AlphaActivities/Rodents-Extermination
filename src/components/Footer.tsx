@@ -18,6 +18,8 @@ const services = [
   'Rodent Damage Cleanup',
   'Air Sealing',
   'Attic Inspection',
+  'Radiant Barrier',
+  'Commercial Attic Services',
 ];
 
 const serviceAreas = [

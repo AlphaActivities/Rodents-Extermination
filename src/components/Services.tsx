@@ -1,4 +1,4 @@
-import { Wind, Trash2, Home, Bug, Lock, Search, ArrowRight } from 'lucide-react';
+import { Wind, Trash2, Home, Bug, Lock, Search, Sun, Building2, ArrowRight } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
 
 const services = [
@@ -44,9 +44,23 @@ const services = [
     highlight: 'Free',
     image: '/images/inspection.jpg',
   },
+  {
+    icon: Sun,
+    title: 'Radiant Barrier',
+    description: 'Radiant barrier installation helps reflect attic heat before it pushes into the living space. This is ideal for Texas homes that struggle with extreme summer heat, hot rooms, and rising cooling costs.',
+    highlight: 'Heat Control',
+    image: '/images/Success_image02.jpg',
+  },
+  {
+    icon: Building2,
+    title: 'Commercial Attic Services',
+    description: 'We also handle select commercial insulation and attic restoration projects. If the space needs cleaner insulation, better thermal control, or documented attic cleanup, Juan can inspect it and give you a clear plan.',
+    highlight: 'Commercial',
+    image: '/images/Success_image03.jpg',
+  },
 ];
 
-const delayClasses = ['', 'reveal-delay-1', 'reveal-delay-2', 'reveal-delay-3', 'reveal-delay-4', 'reveal-delay-5'] as const;
+const delayClasses = ['', 'reveal-delay-1', 'reveal-delay-2', 'reveal-delay-3', 'reveal-delay-4', 'reveal-delay-5', 'reveal-delay-6', 'reveal-delay-7'] as const;
 
 export default function Services() {
   const { ref: headerRef, visible: headerVisible } = useReveal();
@@ -75,7 +89,7 @@ What Actually Fixes These Problems
         {/* Service cards */}
         <div
           ref={cardsRef as React.RefObject<HTMLDivElement>}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
         >
           {services.map((service, i) => {
             const Icon = service.icon;
