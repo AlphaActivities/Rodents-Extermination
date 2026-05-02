@@ -5,8 +5,8 @@ import { useReveal } from '../hooks/useReveal';
 const videos = [
   {
     src: '/videos/in_action.MP4',
-    title: 'Stephen In Action',
-    description: 'Watch Stephen Guerrero at work during a real attic job. The same person you speak with on the phone is the one doing the work.',
+    title: 'Steven In Action',
+    description: 'Watch Steven Guerrero at work during a real attic job. The same person you speak with on the phone is the one doing the work.',
   },
   {
     src: '/videos/Sucking_up.MP4',

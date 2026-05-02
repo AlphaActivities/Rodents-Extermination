@@ -99,7 +99,7 @@ export default function Footer() {
               aria-label="Call Rodents Exterm and Insulation LLC"
             >
               <Phone className="w-4 h-4" aria-hidden="true" />
-              Call Stephen Now
+              Call Steven Now
             </a>
           </div>
 

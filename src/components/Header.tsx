@@ -68,7 +68,7 @@ export default function Header() {
               className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 min-h-[44px] btn-luxury-glow"
             >
               <Phone className="w-4 h-4" />
-              Call Stephen Now
+              Call Steven Now
             </a>
           </div>
 
@@ -119,7 +119,7 @@ export default function Header() {
             className="flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold px-5 py-4 rounded-xl text-base transition-all duration-200 w-full min-h-[52px]"
           >
             <Phone className="w-5 h-5" />
-            Call Stephen Now
+            Call Steven Now
           </a>
           <a
             href="#contact"

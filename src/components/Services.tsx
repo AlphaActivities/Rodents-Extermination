@@ -54,7 +54,7 @@ const services = [
   {
     icon: Building2,
     title: 'Commercial Attic Services',
-    description: 'We also handle select commercial insulation and attic restoration projects. If the space needs cleaner insulation, better thermal control, or documented attic cleanup, Stephen can inspect it and give you a clear plan.',
+    description: 'We also handle select commercial insulation and attic restoration projects. If the space needs cleaner insulation, better thermal control, or documented attic cleanup, Steven can inspect it and give you a clear plan.',
     highlight: 'Commercial',
     image: '/images/Success_image03.jpg',
   },
@@ -129,7 +129,7 @@ What Actually Fixes These Problems
                     href="tel:9728046456"
                     className="inline-flex items-center gap-1.5 text-brand-400 hover:text-brand-300 font-semibold text-sm mt-6 group/link"
                   >
-                    Call Stephen Now
+                    Call Steven Now
                     <ArrowRight className="w-4 h-4 group-hover/link:translate-x-0.5 transition-transform duration-150" />
                   </a>
                 </div>

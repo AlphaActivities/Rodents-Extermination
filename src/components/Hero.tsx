@@ -74,7 +74,7 @@ export default function Hero() {
                 className="inline-flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold px-8 py-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 text-base w-full sm:w-auto min-h-[52px] btn-luxury-glow"
               >
                 <Phone className="w-5 h-5 flex-shrink-0" />
-                Call Stephen Now
+                Call Steven Now
               </a>
               <a
                 href="#contact"
