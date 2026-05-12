@@ -49,7 +49,7 @@ const services = [
     title: 'Radiant Barrier',
     description: 'Radiant barrier installation helps reflect attic heat before it pushes into the living space. This is ideal for Texas homes that struggle with extreme summer heat, hot rooms, and rising cooling costs.',
     highlight: 'Heat Control',
-    image: '/images/Success_image02.jpg',
+    image: '/images/Radiant_barrier.jpg',
   },
   {
     icon: Building2,
