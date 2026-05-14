@@ -2,6 +2,54 @@ import { useRef, useState, useEffect } from 'react';
 import { Play } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
 
+function usePoster(src: string): string | undefined {
+  const [poster, setPoster] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const video = document.createElement('video');
+    video.crossOrigin = 'anonymous';
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'metadata';
+
+    function capture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 360;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      try {
+        setPoster(canvas.toDataURL('image/jpeg', 0.85));
+      } catch {
+        // cross-origin or security error — silently ignore
+      }
+    }
+
+    function onSeeked() {
+      capture();
+    }
+
+    function onLoadedMetadata() {
+      // Seek to 1 second (or 10% through) for a more representative frame
+      video.currentTime = Math.min(1, video.duration * 0.1);
+    }
+
+    video.addEventListener('loadedmetadata', onLoadedMetadata);
+    video.addEventListener('seeked', onSeeked);
+    video.src = src;
+    video.load();
+
+    return () => {
+      video.removeEventListener('loadedmetadata', onLoadedMetadata);
+      video.removeEventListener('seeked', onSeeked);
+      video.src = '';
+    };
+  }, [src]);
+
+  return poster;
+}
+
 const videos = [
   {
     src: '/videos/in_action.MP4',
@@ -31,6 +79,7 @@ const delayClasses = ['', 'reveal-delay-1', 'reveal-delay-2'] as const;
 function FeaturedVideoCard({ visible }: { visible: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
+  const poster = usePoster(featuredVideo.src);
 
   useEffect(() => {
     const el = videoRef.current;
@@ -103,6 +152,7 @@ function FeaturedVideoCard({ visible }: { visible: boolean }) {
           className="w-full h-full object-cover"
           preload="metadata"
           playsInline
+          poster={poster}
           onPause={() => setPlaying(false)}
           onEnded={() => setPlaying(false)}
           aria-label={featuredVideo.title}
@@ -137,6 +187,7 @@ function FeaturedVideoCard({ visible }: { visible: boolean }) {
 function VideoCard({ video, index, parentVisible }: { video: typeof videos[0]; index: number; parentVisible: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
+  const poster = usePoster(video.src);
 
   useEffect(() => {
     const el = videoRef.current;
@@ -225,6 +276,7 @@ function VideoCard({ video, index, parentVisible }: { video: typeof videos[0]; i
           className="w-full h-full object-cover"
           preload="metadata"
           playsInline
+          poster={poster}
           onPause={handlePause}
           onEnded={handleEnded}
           aria-label={video.title}
