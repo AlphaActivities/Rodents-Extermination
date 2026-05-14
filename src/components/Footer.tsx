@@ -83,8 +83,8 @@ export default function Footer() {
                 className="h-28 w-auto object-contain"
               />
             </div>
-            <p className="text-neutral-400 text-sm leading-relaxed mb-3">
-              Residential and commercial attic<br />insulation and restoration services in<br />Fort Worth and the DFW area.<br />Owner operated.<br />Free estimates available.
+            <p className="text-neutral-400 text-sm leading-relaxed mb-3 text-balance">
+              Owner-operated residential and commercial attic insulation and restoration in Fort Worth and the DFW Metroplex. Free estimates available.
             </p>
             <ul className="space-y-1 mb-4">
               {[
@@ -113,8 +113,8 @@ export default function Footer() {
 
           {/* Navigation */}
           <div className={`flex flex-col reveal reveal-delay-1 ${footerVisible ? 'reveal-visible' : ''}`}>
-            <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Navigation</h3>
-            <ul className="flex flex-col gap-0.5">
+            <h3 className="text-white font-semibold text-xs mb-6 uppercase tracking-widest">Navigation</h3>
+            <ul className="flex flex-col gap-1.5">
               {navLinks.map((link) => (
                 <FooterLink key={link.href} href={link.href} label={link.label} />
               ))}
@@ -123,8 +123,8 @@ export default function Footer() {
 
           {/* Attic Services */}
           <div className={`flex flex-col reveal reveal-delay-2 ${footerVisible ? 'reveal-visible' : ''}`}>
-            <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Attic Services</h3>
-            <ul className="flex flex-col gap-0.5">
+            <h3 className="text-white font-semibold text-xs mb-6 uppercase tracking-widest">Attic Services</h3>
+            <ul className="flex flex-col gap-1">
               {atticServices.map((service) => (
                 <FooterLink
                   key={service.label}
@@ -138,8 +138,8 @@ export default function Footer() {
 
           {/* Wildlife Services */}
           <div className={`flex flex-col reveal reveal-delay-3 ${footerVisible ? 'reveal-visible' : ''}`}>
-            <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Wildlife Services</h3>
-            <ul className="flex flex-col gap-0.5">
+            <h3 className="text-white font-semibold text-xs mb-6 uppercase tracking-widest">Wildlife Services</h3>
+            <ul className="flex flex-col gap-1">
               {wildlifeServices.map((service) => (
                 <FooterLink
                   key={service.label}
@@ -153,7 +153,7 @@ export default function Footer() {
 
           {/* Contact + Service Areas */}
           <div className={`reveal reveal-delay-4 ${footerVisible ? 'reveal-visible' : ''}`}>
-            <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Contact</h3>
+            <h3 className="text-white font-semibold text-xs mb-6 uppercase tracking-widest">Contact</h3>
             <ul className="space-y-3 mb-5">
               <li className="flex items-start gap-3">
                 <Phone className="w-4 h-4 text-brand-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
