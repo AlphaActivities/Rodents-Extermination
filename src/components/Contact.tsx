@@ -9,6 +9,7 @@ const services = [
   'Rodent Damage Cleanup',
   'Air Sealing',
   'Attic Inspection',
+  'Wildlife / Rodent Removal',
   'Not Sure / Other',
 ];
 

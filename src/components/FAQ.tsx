@@ -9,7 +9,7 @@ const faqs = [
   },
   {
     question: 'Can rodent activity damage insulation?',
-    answer: 'Yes, significantly. Rodents nest and burrow inside attic insulation, compressing and tearing it apart over time. They leave behind droppings and urine that saturate the material and create an air quality concern throughout the property. Contaminated insulation cannot simply be cleaned or patched. It needs to be fully removed, the attic sanitized, and fresh insulation installed.',
+    answer: 'Yes, significantly. Rodents and wildlife nest and burrow inside attic insulation, compressing and tearing it apart over time. They leave behind droppings and urine that saturate the material and create an air quality concern throughout the property. Contaminated insulation cannot simply be cleaned or patched. It needs to be fully removed, the attic sanitized, and fresh insulation installed.',
   },
   {
     question: 'Do I need insulation removal before new insulation is installed?',
@@ -22,6 +22,22 @@ const faqs = [
   {
     question: 'Can I call directly to schedule?',
     answer: 'Yes, and calling is the fastest way to get on the schedule. Steven answers personally and can typically get you scheduled within a few days. You can also submit a request through the contact form on this page and we will follow up promptly to confirm.',
+  },
+  {
+    question: 'Do you remove live animals from the attic?',
+    answer: 'Yes. Steven can help with birds, raccoons, squirrels, rats, mice, skunks, armadillos, and opossums that get into attics, walls, crawl spaces, or other problem areas. The best first step is to call and describe what you are hearing, seeing, or smelling so he can guide the inspection.',
+  },
+  {
+    question: 'What types of wildlife or pests do you handle?',
+    answer: 'Steven helps with bird removal, raccoon removal, squirrel removal, rat extermination, mice extermination, armadillo trapping, skunk trapping, opossum trapping, and dead animal removal. Mole removal is not listed as a current service.',
+  },
+  {
+    question: 'What happens after wildlife is removed from my attic?',
+    answer: 'After the animal issue is handled, the next step is checking for droppings, nesting, urine contamination, torn insulation, entry points, and odor. If the insulation is damaged, Steven can help with cleanup, insulation removal, air sealing, and attic restoration.',
+  },
+  {
+    question: 'Do you offer dead animal removal?',
+    answer: 'Yes. If there is a strong odor or signs that an animal may have died inside the attic, wall, or crawl space, Steven can inspect the area and help with dead animal removal and cleanup recommendations.',
   },
 ];
 
@@ -53,7 +69,17 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
-const delayClasses = ['', 'reveal-delay-1', 'reveal-delay-2', 'reveal-delay-3', 'reveal-delay-4'] as const;
+const delayClasses = [
+  '',
+  'reveal-delay-1',
+  'reveal-delay-2',
+  'reveal-delay-3',
+  'reveal-delay-4',
+  'reveal-delay-5',
+  'reveal-delay-6',
+  'reveal-delay-7',
+  'reveal-delay-7',
+] as const;
 
 export default function FAQ() {
   const { ref: headerRef, visible: headerVisible } = useReveal();

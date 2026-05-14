@@ -12,14 +12,23 @@ const navLinks = [
 ];
 
 const services = [
-  'Blown-In Insulation',
-  'Insulation Removal',
-  'Attic Restoration',
-  'Rodent Damage Cleanup',
-  'Air Sealing',
-  'Attic Inspection',
-  'Radiant Barrier',
-  'Commercial Attic Services',
+  { label: 'Blown-In Insulation', href: '#services' },
+  { label: 'Insulation Removal', href: '#services' },
+  { label: 'Attic Restoration', href: '#services' },
+  { label: 'Rodent Damage Cleanup', href: '#services' },
+  { label: 'Air Sealing', href: '#services' },
+  { label: 'Attic Inspection', href: '#services' },
+  { label: 'Radiant Barrier', href: '#services' },
+  { label: 'Commercial Attic Services', href: '#services' },
+  { label: 'Bird Removal', href: '#wildlife' },
+  { label: 'Raccoon Removal', href: '#wildlife' },
+  { label: 'Squirrel Removal', href: '#wildlife' },
+  { label: 'Rat Exterminator', href: '#wildlife' },
+  { label: 'Mice Exterminator', href: '#wildlife' },
+  { label: 'Armadillo Trapping', href: '#wildlife' },
+  { label: 'Skunk Trapping', href: '#wildlife' },
+  { label: 'Opossum Trapping', href: '#wildlife' },
+  { label: 'Dead Animal Removal', href: '#wildlife' },
 ];
 
 const serviceAreas = [
@@ -119,10 +128,10 @@ export default function Footer() {
             <ul className="flex flex-col justify-between flex-1">
               {services.map((service) => (
                 <FooterLink
-                  key={service}
-                  href="#services"
-                  label={service}
-                  ariaLabel={`Learn more about ${service}`}
+                  key={service.label}
+                  href={service.href}
+                  label={service.label}
+                  ariaLabel={`Learn more about ${service.label}`}
                 />
               ))}
             </ul>
