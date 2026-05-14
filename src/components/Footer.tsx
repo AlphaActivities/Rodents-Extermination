@@ -96,7 +96,7 @@ export default function Footer() {
                 'Free estimates available',
                 'Residential & commercial attic work',
                 'Call to confirm your service area',
-                'No pressure, just a clear plan',
+                'No pressure, simply a clear plan',
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-neutral-500 text-xs">
                   <svg className="w-3 h-3 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
