@@ -80,7 +80,7 @@ export default function Footer() {
               <img
                 src="/logo/white_logo.PNG"
                 alt="Rodents Exterm & Insulation LLC"
-                className="h-28 w-auto object-contain"
+                className="h-28 w-auto object-contain transition-transform duration-300 ease-out hover:scale-110"
               />
             </div>
             <p className="text-neutral-400 text-sm leading-relaxed mb-3 text-balance">
