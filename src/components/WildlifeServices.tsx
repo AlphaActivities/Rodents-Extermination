@@ -7,54 +7,63 @@ const services = [
     title: 'Bird Removal',
     description: 'Birds nesting in attic vents, soffits, or rafters cause structural damage and leave behind droppings that carry health risks. Steven locates entry points, removes the birds, and seals access to prevent return.',
     highlight: null,
+    image: '/images/birds.webp',
   },
   {
     icon: Cat,
     title: 'Raccoon Removal',
     description: 'Raccoons are strong and destructive. They tear through insulation, damage ductwork, and leave significant contamination behind. Early removal limits the repair work needed afterward.',
     highlight: 'Common',
+    image: '/images/raccoon.webp',
   },
   {
     icon: Squirrel,
     title: 'Squirrel Removal',
     description: 'Squirrels chew through wood, wiring, and insulation to nest in attics. They enter through surprisingly small gaps and reproduce quickly. Removal and entry sealing stop the cycle.',
     highlight: null,
+    image: '/images/squirrel.webp',
   },
   {
     icon: Rat,
     title: 'Rat Exterminator',
     description: 'Rats move fast and breed faster. Once inside an attic they contaminate insulation with droppings, urine, and nesting material. A professional approach removes the infestation and addresses what they leave behind.',
     highlight: 'High Risk',
+    image: '/images/rats.webp',
   },
   {
     icon: Skull,
     title: 'Mice Exterminator',
     description: 'Mice are small enough to enter through gaps the width of a pencil. They nest inside insulation and chew wiring. Effective extermination requires finding every entry point, not just setting traps.',
     highlight: null,
+    image: '/images/mice.webp',
   },
   {
     icon: Shield,
     title: 'Armadillo Trapping',
     description: 'Armadillos dig under foundations and around structures. While they do not typically enter attics, they cause real property damage and need to be humanely trapped and removed from the area.',
     highlight: null,
+    image: '/images/armadillo.webp',
   },
   {
     icon: AlertTriangle,
     title: 'Skunk Trapping',
     description: 'Skunks den under structures and near foundations. Beyond the obvious odor risk, they carry disease and attract other wildlife. Humane trapping keeps the situation from escalating.',
     highlight: null,
+    image: '/images/skunk.webp',
   },
   {
     icon: Cat,
     title: 'Opossum Trapping',
     description: 'Opossums find their way into attics, crawl spaces, and under decks. They are relatively slow-moving but leave a mess behind. Trapping and removal is straightforward when done correctly.',
     highlight: null,
+    image: '/images/opossum.webp',
   },
   {
     icon: Bone,
     title: 'Dead Animal Removal',
     description: 'A dead animal inside a wall, attic, or crawl space creates serious odor and health concerns. Steven locates the source, removes it, and treats the area to eliminate the smell and contamination.',
     highlight: 'Urgent',
+    image: '/images/dead.webp',
   },
 ];
 
@@ -108,17 +117,23 @@ export default function WildlifeServices() {
               <div
                 key={service.title}
                 className={`relative rounded-2xl overflow-hidden group flex flex-col min-h-[280px] card-luxury-hover reveal ${delayClasses[i]} ${cardsVisible ? 'reveal-visible' : ''}`}
-                style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f1117 100%)' }}
               >
-                {/* Subtle top border accent */}
-                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
+                {/* Background image */}
+                <img
+                  src={service.image}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 w-full h-full object-cover z-0"
+                />
+                {/* Dark overlay */}
+                <div className="absolute inset-0 bg-black/65 z-10" />
 
                 {/* Content */}
-                <div className="relative z-10 p-7 flex flex-col flex-1">
+                <div className="relative z-20 p-7 flex flex-col flex-1">
                   {/* Icon + badge row */}
                   <div className="flex items-start justify-between mb-5">
-                    <div className="w-12 h-12 bg-brand-500/20 border border-brand-500/30 rounded-xl flex items-center justify-center group-hover:bg-brand-500/30 group-hover:border-brand-500/50 transition-all duration-200">
-                      <Icon className="w-6 h-6 text-brand-400" />
+                    <div className="w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center group-hover:bg-brand-600 transition-colors duration-200">
+                      <Icon className="w-6 h-6 text-white" />
                     </div>
                     {service.highlight && (
                       <span className="text-xs font-semibold bg-white/10 text-white border border-white/15 px-2.5 py-1 rounded-full backdrop-blur-sm">
