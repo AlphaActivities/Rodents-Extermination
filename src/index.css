@@ -322,6 +322,11 @@
   }
 }
 
+/* ── Footer links: override global min-height tap target ─── */
+.footer-link {
+  min-height: unset !important;
+}
+
 /* ── Nav link underline sweep (desktop only) ─────────────── */
 .nav-link {
   position: relative;
