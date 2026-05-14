@@ -13,7 +13,7 @@ const jobs = [
     after: {
       src: '/images/after_2.JPG',
       alt: 'After second job — fresh insulation installed and attic restored',
-      objectPosition: 'left 60%',
+      objectPosition: 'left top',
     },
   },
   {
