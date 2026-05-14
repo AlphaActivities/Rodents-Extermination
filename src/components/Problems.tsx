@@ -68,13 +68,16 @@ export default function Problems() {
             return (
               <div
                 key={problem.title}
-                className={`card p-7 group hover:-translate-y-1 transition-all duration-200 reveal ${delayClasses[i]} ${cardsVisible ? 'reveal-visible' : ''}`}
+                className={`problem-tile group reveal ${delayClasses[i]} ${cardsVisible ? 'reveal-visible' : ''}`}
               >
-                <div className="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-brand-100 transition-colors duration-200 border border-brand-100">
-                  <Icon className="w-6 h-6 text-brand-500" />
+                <div className="problem-tile-top-line" />
+                <div className="p-7">
+                  <div className="problem-tile-icon mb-5">
+                    <Icon className="w-5 h-5 text-brand-500 relative z-10 group-hover:text-brand-400 transition-colors duration-300" />
+                  </div>
+                  <h3 className="text-base font-semibold text-neutral-900 mb-2 tracking-tight">{problem.title}</h3>
+                  <p className="text-neutral-500 text-sm leading-relaxed">{problem.description}</p>
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">{problem.title}</h3>
-                <p className="text-neutral-700 text-sm leading-relaxed">{problem.description}</p>
               </div>
             );
           })}
