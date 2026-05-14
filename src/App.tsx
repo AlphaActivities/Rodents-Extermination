@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import Problems from './components/Problems';
 import Services from './components/Services';
+import WildlifeServices from './components/WildlifeServices';
 import Transformation from './components/Transformation';
 import Process from './components/Process';
 import VideoShowcase from './components/VideoShowcase';
@@ -32,6 +33,7 @@ function App() {
         <Hero />
         <Problems />
         <Services />
+        <WildlifeServices />
         <Transformation />
         <Process />
         <VideoShowcase />
