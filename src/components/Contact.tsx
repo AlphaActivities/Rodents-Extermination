@@ -235,7 +235,7 @@ export default function Contact() {
                     Submit Request For Free Estimate
                   </button>
 
-                  <p className="text-neutral-500 text-xs text-center pt-1">
+                  <p className="text-neutral-600 text-xs text-center pt-1">
                     We will only use your contact information to follow up on this request.
                   </p>
                 </form>

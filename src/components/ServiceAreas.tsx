@@ -38,7 +38,7 @@ export default function ServiceAreas() {
               <p className="section-subheading mb-3">
                 We work throughout Fort Worth and the surrounding DFW area. If you're nearby, we can take a look at your attic.
               </p>
-              <p className="text-neutral-500 text-sm mb-8 sm:mb-10">
+              <p className="text-neutral-600 text-sm mb-8 sm:mb-10">
                 If your city isn't listed, call to confirm. We cover more ground than what's shown here.
               </p>
             </div>
@@ -77,7 +77,7 @@ export default function ServiceAreas() {
 
             {/* Bridge into FAQ */}
             <div className={`mt-10 pt-8 border-t border-neutral-200 reveal reveal-delay-1 ${chipsVisible ? 'reveal-visible' : ''}`}>
-              <p className="text-neutral-600 text-sm">Have questions before reaching out? The most common ones, including what it costs and whether you even need it, are answered just below.</p>
+              <p className="text-neutral-700 text-sm">Have questions before reaching out? The most common ones, including what it costs and whether you even need it, are answered just below.</p>
             </div>
           </div>
 

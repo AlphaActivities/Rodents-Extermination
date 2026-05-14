@@ -143,8 +143,8 @@ What Actually Fixes These Problems
           ref={bridgeRef as React.RefObject<HTMLDivElement>}
           className={`border-t border-neutral-100 pt-12 text-center reveal ${bridgeVisible ? 'reveal-visible' : ''}`}
         >
-          <p className="text-neutral-600 text-base mb-1">Wondering what a finished job actually looks like?</p>
-          <p className="text-neutral-500 text-sm">The before and after difference is something most homeowners have to see to believe.</p>
+          <p className="text-neutral-700 text-base mb-1">Wondering what a finished job actually looks like?</p>
+          <p className="text-neutral-600 text-sm">The before and after difference is something most homeowners have to see to believe.</p>
         </div>
       </div>
     </section>

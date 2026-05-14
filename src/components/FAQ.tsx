@@ -54,7 +54,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
       >
         <span className="font-semibold text-neutral-900 text-sm sm:text-base">{question}</span>
         <ChevronDown
-          className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180 text-brand-500' : 'text-neutral-500'}`}
+          className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180 text-brand-500' : 'text-neutral-600'}`}
           aria-hidden="true"
         />
       </button>
@@ -122,15 +122,15 @@ export default function FAQ() {
           ref={ctaRef as React.RefObject<HTMLDivElement>}
           className={`mt-12 text-center reveal ${ctaVisible ? 'reveal-visible' : ''}`}
         >
-          <p className="text-neutral-600 text-sm mb-2">Have a question that is not listed here?</p>
-          <p className="text-neutral-500 text-sm mb-6">A quick call is the fastest way to get a straight answer about your specific situation.</p>
+          <p className="text-neutral-700 text-sm mb-2">Have a question that is not listed here?</p>
+          <p className="text-neutral-600 text-sm mb-6">A quick call is the fastest way to get a straight answer about your specific situation.</p>
           <a href="tel:9728046456" className="btn-primary btn-luxury-glow">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
             Call Steven Now
           </a>
-          <p className="text-neutral-500 text-xs mt-3">No pressure, just a clear plan</p>
+          <p className="text-neutral-600 text-xs mt-3">No pressure, just a clear plan</p>
         </div>
       </div>
     </section>
