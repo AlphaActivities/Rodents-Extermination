@@ -144,7 +144,7 @@ export default function Footer() {
           </div>
 
           {/* Contact + Service Areas */}
-          <div className={`reveal reveal-delay-4 ${footerVisible ? 'reveal-visible' : ''}`}>
+          <div className={`flex flex-col reveal reveal-delay-4 ${footerVisible ? 'reveal-visible' : ''}`}>
             <h3 className="text-white font-semibold text-xs mb-6 uppercase tracking-widest">Contact</h3>
             <ul className="space-y-3 mb-5">
               <li className="flex items-start gap-3">
@@ -168,15 +168,6 @@ export default function Footer() {
               </li>
             </ul>
 
-            <a
-              href="tel:9728046456"
-              className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-4 py-2.5 rounded-xl transition-all duration-200 text-sm hover:-translate-y-0.5 shadow-sm min-h-[44px] self-start mb-5"
-              aria-label="Call Rodents Exterm and Insulation LLC"
-            >
-              <Phone className="w-4 h-4" aria-hidden="true" />
-              Call Steven Now
-            </a>
-
             <h3 className="text-white font-semibold text-xs mb-2.5 uppercase tracking-widest">Service Areas</h3>
             <ul className="grid grid-cols-2 gap-x-3 gap-y-1">
               {serviceAreas.map((area) => (
@@ -184,6 +175,15 @@ export default function Footer() {
               ))}
               <li className="col-span-2 text-neutral-600 text-xs pt-0.5">& surrounding DFW communities</li>
             </ul>
+
+            <a
+              href="tel:9728046456"
+              className="mt-auto inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-4 py-2.5 rounded-xl transition-all duration-200 text-sm hover:-translate-y-0.5 shadow-sm min-h-[44px] self-start pt-5"
+              aria-label="Call Rodents Exterm and Insulation LLC"
+            >
+              <Phone className="w-4 h-4" aria-hidden="true" />
+              Call Steven Now
+            </a>
           </div>
         </div>
 
