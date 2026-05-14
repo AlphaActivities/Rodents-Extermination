@@ -99,7 +99,7 @@ export default function Footer() {
                 'No pressure, just a clear plan',
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-neutral-500 text-xs">
-                  <svg className="w-3 h-3 text-brand-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg className="w-3 h-3 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
                   {item}
