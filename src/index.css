@@ -322,9 +322,21 @@
   }
 }
 
-/* ── Footer links: override global min-height tap target ─── */
+/* ── Footer links ────────────────────────────────────────── */
 .footer-link {
   min-height: unset !important;
+  text-decoration: none;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  transition: color 0.2s ease, text-decoration-color 0.25s ease;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+  text-decoration-color: #2563eb;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
 }
 
 /* ── Nav link underline sweep (desktop only) ─────────────── */
