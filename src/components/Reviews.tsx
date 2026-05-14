@@ -18,7 +18,7 @@ const reviews = [
     name: 'Platinum Graphix',
     timeAgo: 'a year ago',
     rating: 5,
-    text: 'Rodents Exterm and Insulation LLC Fort Worth... highly recommend! Great service and professional work done by Juan.',
+    text: 'Rodents Exterm and Insulation LLC Fort Worth... highly recommend! Great service and professional work done by Steven.',
   },
 ];
 
