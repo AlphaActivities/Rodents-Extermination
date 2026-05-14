@@ -42,7 +42,7 @@ export default function Problems() {
   const { ref: bridgeRef, visible: bridgeVisible } = useReveal();
 
   return (
-    <section id="problems" className="py-20 sm:py-28 bg-neutral-50">
+    <section id="problems" className="py-20 sm:py-28 bg-neutral-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div
@@ -50,10 +50,10 @@ export default function Problems() {
           className={`text-center mb-16 reveal ${headerVisible ? 'reveal-visible' : ''}`}
         >
           <p className="section-label mb-3">Does This Sound Familiar?</p>
-          <h2 className="section-heading mb-5">
+          <h2 className="section-heading mb-5 text-white">
             Most Attic Problems Stay Hidden Until They Get Expensive
           </h2>
-          <p className="section-subheading mx-auto">
+          <p className="section-subheading mx-auto text-neutral-400">
             These are the situations most homeowners notice first. What's causing them is usually hidden above your ceiling.
           </p>
         </div>
@@ -68,13 +68,18 @@ export default function Problems() {
             return (
               <div
                 key={problem.title}
-                className={`card p-7 group hover:-translate-y-1 transition-all duration-200 reveal ${delayClasses[i]} ${cardsVisible ? 'reveal-visible' : ''}`}
+                className={`problem-card group reveal ${delayClasses[i]} ${cardsVisible ? 'reveal-visible' : ''}`}
               >
-                <div className="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-brand-100 transition-colors duration-200 border border-brand-100">
-                  <Icon className="w-6 h-6 text-brand-500" />
+                {/* top accent line */}
+                <div className="problem-card-accent" />
+
+                <div className="p-7 relative z-10">
+                  <div className="problem-card-icon-wrap mb-5">
+                    <Icon className="w-5 h-5 text-amber-400 relative z-10" />
+                  </div>
+                  <h3 className="text-base font-semibold text-white mb-2 tracking-tight">{problem.title}</h3>
+                  <p className="text-neutral-400 text-sm leading-relaxed">{problem.description}</p>
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">{problem.title}</h3>
-                <p className="text-neutral-700 text-sm leading-relaxed">{problem.description}</p>
               </div>
             );
           })}
@@ -85,13 +90,13 @@ export default function Problems() {
           ref={bridgeRef as React.RefObject<HTMLDivElement>}
           className={`text-center mt-14 reveal ${bridgeVisible ? 'reveal-visible' : ''}`}
         >
-          <p className="text-neutral-700 mb-2">Most of these don't start as big problems. They build quietly over time.</p>
-          <p className="text-neutral-600 text-sm mb-6">Below are the specific things that actually fix each one of them.</p>
+          <p className="text-neutral-300 mb-2">Most of these don't start as big problems. They build quietly over time.</p>
+          <p className="text-neutral-500 text-sm mb-6">Below are the specific things that actually fix each one of them.</p>
           <a href="tel:9728046456" className="btn-primary min-h-[52px] px-8">
             <Phone className="w-4 h-4" />
             Call Steven Now
           </a>
-          <p className="text-neutral-600 text-xs mt-3">Free estimates, no obligation.</p>
+          <p className="text-neutral-500 text-xs mt-3">Free estimates, no obligation.</p>
         </div>
       </div>
     </section>
