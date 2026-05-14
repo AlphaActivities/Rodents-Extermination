@@ -606,24 +606,25 @@
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@media (hover: hover) {
-  .problem-tile:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 48px rgba(37, 99, 235, 0.12),
-                0 8px 16px rgba(0, 0, 0, 0.06),
-                0 0 0 1px rgba(37, 99, 235, 0.14);
-    border-color: rgba(37, 99, 235, 0.20);
-  }
+.problem-tile:hover,
+.problem-tile:active {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(37, 99, 235, 0.12),
+              0 8px 16px rgba(0, 0, 0, 0.06),
+              0 0 0 1px rgba(37, 99, 235, 0.14);
+  border-color: rgba(37, 99, 235, 0.20);
+}
 
-  .problem-tile:hover .problem-tile-top-line {
-    transform: scaleX(1);
-  }
+.problem-tile:hover .problem-tile-top-line,
+.problem-tile:active .problem-tile-top-line {
+  transform: scaleX(1);
+}
 
-  .problem-tile:hover .problem-tile-icon {
-    background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
-    border-color: rgba(37, 99, 235, 0.35);
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.14);
-  }
+.problem-tile:hover .problem-tile-icon,
+.problem-tile:active .problem-tile-icon {
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.14);
 }
 
 .problem-tile-icon {
@@ -724,7 +725,4 @@
     pointer-events: none;
   }
 
-  .problem-tile:hover {
-    transform: none;
-  }
 }
