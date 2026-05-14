@@ -51,11 +51,12 @@ const serviceAreas = [
 
 function FooterLink({ href, label, ariaLabel }: { href: string; label: string; ariaLabel?: string }) {
   return (
-    <li className="group cursor-pointer">
+    <li>
       <a
         href={href}
         aria-label={ariaLabel}
-        className="relative inline-block text-neutral-400 group-hover:text-white text-sm transition-colors duration-200"
+        className="group relative inline text-neutral-400 hover:text-white text-sm transition-colors duration-200"
+        style={{ minHeight: 'unset' }}
       >
         {label}
         <span
@@ -163,7 +164,8 @@ export default function Footer() {
                 <Phone className="w-4 h-4 text-brand-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <a
                   href="tel:9728046456"
-                  className="relative inline-block text-neutral-400 hover:text-white text-sm transition-colors duration-200 group"
+                  className="group relative inline text-neutral-400 hover:text-white text-sm transition-colors duration-200"
+                  style={{ minHeight: 'unset' }}
                   aria-label="Call (972) 804-6456"
                 >
                   (972) 804-6456
