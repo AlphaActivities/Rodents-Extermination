@@ -76,7 +76,7 @@ export default function WildlifeServices() {
   const { ref: bridgeRef, visible: bridgeVisible } = useReveal();
 
   return (
-    <section id="wildlife" className="py-16 sm:py-20 bg-neutral-950">
+    <section id="wildlife" className="py-16 sm:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
@@ -85,10 +85,10 @@ export default function WildlifeServices() {
           className={`flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14 reveal ${headerVisible ? 'reveal-visible' : ''}`}
         >
           <div>
-            <p className="text-brand-400 font-semibold text-sm uppercase tracking-widest mb-3">
+            <p className="text-brand-500 font-semibold text-sm uppercase tracking-widest mb-3">
               Wildlife &amp; Rodent Removal
             </p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-900 leading-tight">
               Animal Problems in Your Attic?<br className="hidden sm:block" /> Steven Handles That Too.
             </h2>
           </div>
@@ -146,9 +146,9 @@ export default function WildlifeServices() {
         {/* CTA bridge */}
         <div
           ref={bridgeRef as React.RefObject<HTMLDivElement>}
-          className={`border border-neutral-800 rounded-2xl p-8 sm:p-10 bg-neutral-900/60 text-center reveal ${bridgeVisible ? 'reveal-visible' : ''}`}
+          className={`border border-neutral-200 rounded-2xl p-8 sm:p-10 bg-neutral-50 text-center reveal ${bridgeVisible ? 'reveal-visible' : ''}`}
         >
-          <p className="text-white font-bold text-xl sm:text-2xl mb-3">
+          <p className="text-neutral-900 font-bold text-xl sm:text-2xl mb-3">
             Not sure what got into your attic?
           </p>
           <p className="text-neutral-400 text-base leading-relaxed max-w-2xl mx-auto mb-8">
