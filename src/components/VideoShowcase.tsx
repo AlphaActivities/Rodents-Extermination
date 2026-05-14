@@ -100,7 +100,7 @@ function FeaturedVideoCard({ visible }: { visible: boolean }) {
       <div className="relative bg-neutral-900 overflow-hidden group" style={{ height: 'clamp(260px, 42vw, 520px)' }}>
         <video
           ref={videoRef}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
           preload="metadata"
           playsInline
           onPause={() => setPlaying(false)}
