@@ -93,7 +93,7 @@ function FeaturedVideoCard({ visible }: { visible: boolean }) {
       {/* Featured label bar */}
       <div className="flex items-center gap-3 px-7 pt-6 pb-4 border-b border-neutral-100">
         <span className="bg-brand-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Featured</span>
-        <span className="text-neutral-400 text-xs font-medium">Commercial Transformation</span>
+        <span className="text-neutral-500 text-xs font-medium">Commercial Transformation</span>
       </div>
 
       {/* Video */}
@@ -127,7 +127,7 @@ function FeaturedVideoCard({ visible }: { visible: boolean }) {
       <div className="px-7 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h3 className="font-bold text-neutral-900 text-lg mb-1">{featuredVideo.title}</h3>
-          <p className="text-neutral-500 text-sm leading-relaxed max-w-2xl">{featuredVideo.description}</p>
+          <p className="text-neutral-600 text-sm leading-relaxed max-w-2xl">{featuredVideo.description}</p>
         </div>
       </div>
     </div>
@@ -248,7 +248,7 @@ function VideoCard({ video, index, parentVisible }: { video: typeof videos[0]; i
 
       <div className="p-5 flex flex-col flex-1">
         <h3 className="font-bold text-neutral-900 mb-2">{video.title}</h3>
-        <p className="text-neutral-500 text-sm leading-relaxed flex-1">{video.description}</p>
+        <p className="text-neutral-600 text-sm leading-relaxed flex-1">{video.description}</p>
       </div>
     </div>
   );
@@ -295,8 +295,8 @@ export default function VideoShowcase() {
           ref={bridgeRef as React.RefObject<HTMLDivElement>}
           className={`mt-12 border-t border-neutral-200 pt-10 text-center reveal ${bridgeVisible ? 'reveal-visible' : ''}`}
         >
-          <p className="text-neutral-500 text-base mb-1">Every job is done by the same person you speak with on the phone.</p>
-          <p className="text-neutral-400 text-sm">Here is what that means for the homeowners we work with.</p>
+          <p className="text-neutral-600 text-base mb-1">Every job is done by the same person you speak with on the phone.</p>
+          <p className="text-neutral-500 text-sm">Here is what that means for the homeowners we work with.</p>
         </div>
       </div>
     </section>

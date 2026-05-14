@@ -92,7 +92,7 @@ export default function WildlifeServices() {
               Animal Problems in Your Attic?<br className="hidden sm:block" /> Steven Handles That Too.
             </h2>
           </div>
-          <p className="text-neutral-400 text-lg leading-relaxed lg:text-right lg:max-w-sm">
+          <p className="text-neutral-600 text-lg leading-relaxed lg:text-right lg:max-w-sm">
             From birds and raccoons to rats, mice, squirrels, skunks, armadillos, opossums, and dead animal removal, Steven helps remove the problem before it turns into damage.
           </p>
         </div>
@@ -151,7 +151,7 @@ export default function WildlifeServices() {
           <p className="text-neutral-900 font-bold text-xl sm:text-2xl mb-3">
             Not sure what got into your attic?
           </p>
-          <p className="text-neutral-400 text-base leading-relaxed max-w-2xl mx-auto mb-8">
+          <p className="text-neutral-500 text-base leading-relaxed max-w-2xl mx-auto mb-8">
             Call Steven and describe what you're hearing, seeing, or smelling. He can help determine whether you need removal, cleanup, insulation repair, or a full attic restoration.
           </p>
           <a

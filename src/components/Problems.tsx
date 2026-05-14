@@ -74,7 +74,7 @@ export default function Problems() {
                   <Icon className="w-6 h-6 text-brand-500" />
                 </div>
                 <h3 className="text-lg font-semibold text-neutral-900 mb-2">{problem.title}</h3>
-                <p className="text-neutral-500 text-sm leading-relaxed">{problem.description}</p>
+                <p className="text-neutral-600 text-sm leading-relaxed">{problem.description}</p>
               </div>
             );
           })}
@@ -85,13 +85,13 @@ export default function Problems() {
           ref={bridgeRef as React.RefObject<HTMLDivElement>}
           className={`text-center mt-14 reveal ${bridgeVisible ? 'reveal-visible' : ''}`}
         >
-          <p className="text-neutral-500 mb-2">Most of these don't start as big problems. They build quietly over time.</p>
-          <p className="text-neutral-400 text-sm mb-6">Below are the specific things that actually fix each one of them.</p>
+          <p className="text-neutral-600 mb-2">Most of these don't start as big problems. They build quietly over time.</p>
+          <p className="text-neutral-500 text-sm mb-6">Below are the specific things that actually fix each one of them.</p>
           <a href="tel:9728046456" className="btn-primary min-h-[52px] px-8">
             <Phone className="w-4 h-4" />
             Call Steven Now
           </a>
-          <p className="text-neutral-400 text-xs mt-3">Free estimates, no obligation.</p>
+          <p className="text-neutral-500 text-xs mt-3">Free estimates, no obligation.</p>
         </div>
       </div>
     </section>

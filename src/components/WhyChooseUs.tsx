@@ -68,7 +68,7 @@ export default function WhyChooseUs() {
                 </div>
                 <div className="font-bold text-neutral-900 text-sm leading-tight">Residential</div>
                 <div className="font-bold text-neutral-900 text-sm leading-tight mb-1">&amp; Commercial</div>
-                <div className="text-neutral-400 text-xs">Attic focused. Owner-operated.</div>
+                <div className="text-neutral-500 text-xs">Attic focused. Owner-operated.</div>
               </div>
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function WhyChooseUs() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-neutral-900 text-sm mb-1">{reason.title}</h3>
-                      <p className="text-neutral-500 text-xs leading-relaxed">{reason.description}</p>
+                      <p className="text-neutral-600 text-xs leading-relaxed">{reason.description}</p>
                     </div>
                   </div>
                 );
@@ -141,13 +141,13 @@ export default function WhyChooseUs() {
                 Request Free Estimate
               </a>
             </div>
-            <p className={`text-neutral-400 text-xs mt-3 reveal reveal-delay-1 ${ctaVisible ? 'reveal-visible' : ''}`}>
+            <p className={`text-neutral-500 text-xs mt-3 reveal reveal-delay-1 ${ctaVisible ? 'reveal-visible' : ''}`}>
               Free estimates for residential and commercial attic work.
             </p>
 
             {/* Bridge into Reviews */}
             <div className={`mt-10 pt-8 border-t border-neutral-200 reveal reveal-delay-2 ${ctaVisible ? 'reveal-visible' : ''}`}>
-              <p className="text-neutral-500 text-sm">Do not just take our word for it. Here is what customers in DFW say after the job is done.</p>
+              <p className="text-neutral-600 text-sm">Do not just take our word for it. Here is what customers in DFW say after the job is done.</p>
             </div>
           </div>
         </div>
