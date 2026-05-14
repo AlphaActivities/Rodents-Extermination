@@ -93,7 +93,7 @@ export default function WildlifeServices() {
             </h2>
           </div>
           <p className="text-neutral-400 text-lg leading-relaxed lg:text-right lg:max-w-sm">
-            From birds and raccoons to rats, mice, squirrels, skunks, armadillos, opossums, and dead animal removal, Steven helps remove the problem before it turns into insulation damage.
+            From birds and raccoons to rats, mice, squirrels, skunks, armadillos, opossums, and dead animal removal, Steven helps remove the problem before it turns into damage.
           </p>
         </div>
 
@@ -168,3 +168,6 @@ export default function WildlifeServices() {
     </section>
   );
 }
+
+
+export default WildlifeServices
