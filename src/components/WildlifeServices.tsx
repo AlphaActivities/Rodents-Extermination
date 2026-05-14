@@ -146,7 +146,7 @@ export default function WildlifeServices() {
         {/* CTA bridge */}
         <div
           ref={bridgeRef as React.RefObject<HTMLDivElement>}
-          className={`border border-neutral-200 rounded-2xl p-8 sm:p-10 bg-neutral-50 text-center reveal ${bridgeVisible ? 'reveal-visible' : ''}`}
+          className={`rounded-2xl p-8 sm:p-10 bg-neutral-50 text-center reveal ${bridgeVisible ? 'reveal-visible' : ''}`}
         >
           <p className="text-neutral-900 font-bold text-xl sm:text-2xl mb-3">
             Not sure what got into your attic?
