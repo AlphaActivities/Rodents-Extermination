@@ -6,19 +6,6 @@ const jobs = [
   {
     label: 'Job 1',
     before: {
-      src: '/images/before_1.jpg',
-      alt: 'Before attic insulation cleanup and rodent contamination restoration',
-      objectPosition: 'center',
-    },
-    after: {
-      src: '/images/after_1.jpg',
-      alt: 'After attic insulation restoration with clean coverage',
-      objectPosition: 'left',
-    },
-  },
-  {
-    label: 'Job 2',
-    before: {
       src: '/images/before_2.JPG',
       alt: 'Before second job — damaged insulation and attic debris',
       objectPosition: 'center',
@@ -27,6 +14,19 @@ const jobs = [
       src: '/images/after_2.JPG',
       alt: 'After second job — fresh insulation installed and attic restored',
       objectPosition: 'center 60%',
+    },
+  },
+  {
+    label: 'Job 2',
+    before: {
+      src: '/images/before_1.jpg',
+      alt: 'Before attic insulation cleanup and rodent contamination restoration',
+      objectPosition: 'center',
+    },
+    after: {
+      src: '/images/after_1.jpg',
+      alt: 'After attic insulation restoration with clean coverage',
+      objectPosition: 'left',
     },
   },
   {
