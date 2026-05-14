@@ -51,7 +51,7 @@ const serviceAreas = [
 
 function FooterLink({ href, label, ariaLabel }: { href: string; label: string; ariaLabel?: string }) {
   return (
-    <li className="group cursor-pointer py-1 -my-1">
+    <li className="group cursor-pointer">
       <a
         href={href}
         aria-label={ariaLabel}
@@ -118,7 +118,7 @@ export default function Footer() {
           {/* Navigation */}
           <div className={`flex flex-col reveal reveal-delay-1 ${footerVisible ? 'reveal-visible' : ''}`}>
             <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Navigation</h3>
-            <ul className="flex flex-col gap-y-0.5">
+            <ul className="flex flex-col gap-y-1.5">
               {navLinks.map((link) => (
                 <FooterLink key={link.href} href={link.href} label={link.label} />
               ))}
@@ -128,7 +128,7 @@ export default function Footer() {
           {/* Attic Services */}
           <div className={`flex flex-col reveal reveal-delay-2 ${footerVisible ? 'reveal-visible' : ''}`}>
             <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Attic Services</h3>
-            <ul className="flex flex-col gap-y-0.5">
+            <ul className="flex flex-col gap-y-1.5">
               {atticServices.map((service) => (
                 <FooterLink
                   key={service.label}
@@ -143,7 +143,7 @@ export default function Footer() {
           {/* Wildlife Services */}
           <div className={`flex flex-col reveal reveal-delay-3 ${footerVisible ? 'reveal-visible' : ''}`}>
             <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Wildlife Services</h3>
-            <ul className="flex flex-col gap-y-0.5">
+            <ul className="flex flex-col gap-y-1.5">
               {wildlifeServices.map((service) => (
                 <FooterLink
                   key={service.label}
