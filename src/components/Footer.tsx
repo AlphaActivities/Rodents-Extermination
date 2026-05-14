@@ -51,16 +51,16 @@ const serviceAreas = [
 
 function FooterLink({ href, label, ariaLabel }: { href: string; label: string; ariaLabel?: string }) {
   return (
-    <li className="group relative flex flex-col justify-center" style={{ minHeight: '44px' }}>
+    <li className="group">
       <a
         href={href}
         aria-label={ariaLabel}
-        className="relative text-neutral-400 group-hover:text-white text-sm transition-colors duration-200 pb-1.5"
+        className="relative inline-block text-neutral-400 group-hover:text-white text-sm transition-colors duration-200 py-2"
         style={{ minHeight: 'unset' }}
       >
         {label}
         <span
-          className="absolute bottom-0 left-0 h-[2px] bg-brand-500 w-0 group-hover:w-full transition-[width] duration-300 ease-out"
+          className="absolute bottom-1.5 left-0 h-[2px] bg-brand-500 w-0 group-hover:w-full transition-[width] duration-300 ease-out"
           aria-hidden="true"
         />
       </a>
@@ -119,7 +119,7 @@ export default function Footer() {
           {/* Navigation */}
           <div className={`flex flex-col reveal reveal-delay-1 ${footerVisible ? 'reveal-visible' : ''}`}>
             <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Navigation</h3>
-            <ul className="flex flex-col flex-1 justify-between">
+            <ul className="flex flex-col gap-0.5">
               {navLinks.map((link) => (
                 <FooterLink key={link.href} href={link.href} label={link.label} />
               ))}
@@ -129,7 +129,7 @@ export default function Footer() {
           {/* Attic Services */}
           <div className={`flex flex-col reveal reveal-delay-2 ${footerVisible ? 'reveal-visible' : ''}`}>
             <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Attic Services</h3>
-            <ul className="flex flex-col flex-1 justify-between">
+            <ul className="flex flex-col gap-0.5">
               {atticServices.map((service) => (
                 <FooterLink
                   key={service.label}
@@ -144,7 +144,7 @@ export default function Footer() {
           {/* Wildlife Services */}
           <div className={`flex flex-col reveal reveal-delay-3 ${footerVisible ? 'reveal-visible' : ''}`}>
             <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Wildlife Services</h3>
-            <ul className="flex flex-col flex-1 justify-between">
+            <ul className="flex flex-col gap-0.5">
               {wildlifeServices.map((service) => (
                 <FooterLink
                   key={service.label}
