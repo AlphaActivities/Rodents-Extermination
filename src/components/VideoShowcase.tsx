@@ -22,7 +22,7 @@ const videos = [
 
 const featuredVideo = {
   src: '/videos/commercial_before_after.MP4',
-  title: 'Commercial Job — Before & After',
+  title: 'Commercial Job Before & After',
   description: 'Full transformation on a commercial attic job. Old insulation removed, the space cleaned and prepared, and white liner installed from start to finish.',
 };
 
