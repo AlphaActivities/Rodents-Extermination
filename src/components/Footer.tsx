@@ -49,14 +49,15 @@ const serviceAreas = [
   'Crowley',
 ];
 
-function FooterLink({ href, label, ariaLabel }: { href: string; label: string; ariaLabel?: string }) {
+function FooterLink({ href, label, ariaLabel, showDot }: { href: string; label: string; ariaLabel?: string; showDot?: boolean }) {
   return (
     <li className="footer-row">
       <a
         href={href}
         aria-label={ariaLabel}
-        className="footer-row-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 py-2"
+        className="footer-row-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 py-2 flex items-center gap-2"
       >
+        {showDot && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" aria-hidden="true" />}
         {label}
       </a>
     </li>
@@ -108,7 +109,7 @@ export default function Footer() {
             <h3 className="text-white font-semibold text-xs mb-6 uppercase tracking-widest">Navigation</h3>
             <ul className="flex flex-col gap-1.5">
               {navLinks.map((link) => (
-                <FooterLink key={link.href} href={link.href} label={link.label} />
+                <FooterLink key={link.href} href={link.href} label={link.label} showDot />
               ))}
             </ul>
           </div>
