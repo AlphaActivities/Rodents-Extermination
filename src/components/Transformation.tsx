@@ -113,7 +113,7 @@ export default function Transformation() {
             ref={beforeRef as React.RefObject<HTMLDivElement>}
             className={`bg-neutral-800 rounded-3xl overflow-hidden border border-neutral-700 shadow-2xl reveal-left ${beforeVisible ? 'reveal-visible' : ''}`}
           >
-            <div className="relative h-64 overflow-hidden">
+            <div className="relative aspect-square overflow-hidden">
               {jobs.map((job, i) => (
                 <img
                   key={i}
@@ -161,7 +161,7 @@ export default function Transformation() {
             ref={afterRef as React.RefObject<HTMLDivElement>}
             className={`bg-neutral-800 rounded-3xl overflow-hidden border border-brand-500/30 shadow-2xl ring-1 ring-brand-500/20 reveal-right reveal-delay-1 ${afterVisible ? 'reveal-visible' : ''}`}
           >
-            <div className="relative h-64 overflow-hidden">
+            <div className="relative aspect-square overflow-hidden">
               {jobs.map((job, i) => (
                 <img
                   key={i}
