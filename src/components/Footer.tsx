@@ -53,7 +53,7 @@ function FooterLink({ href, label, ariaLabel }: { href: string; label: string; a
   return (
     <li className="group relative pb-1.5">
       <span
-        className="absolute bottom-0 left-0 h-[1.5px] w-full bg-brand-500 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
+        className="absolute bottom-0 left-0 h-[2px] w-full bg-brand-500 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"
         aria-hidden="true"
       />
       <a
@@ -169,7 +169,7 @@ export default function Footer() {
                   aria-label="Call (972) 804-6456"
                 >
                   (972) 804-6456
-                  <span className="absolute left-0 -bottom-px h-[1.5px] w-full bg-brand-500 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" aria-hidden="true" />
+                  <span className="absolute left-0 -bottom-px h-[2px] w-full bg-brand-500 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" aria-hidden="true" />
                 </a>
               </li>
               <li className="flex items-start gap-3">
