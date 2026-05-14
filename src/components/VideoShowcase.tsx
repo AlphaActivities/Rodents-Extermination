@@ -20,7 +20,119 @@ const videos = [
   },
 ];
 
+const featuredVideo = {
+  src: '/videos/commercial_before_after.MP4',
+  title: 'Commercial Job — Before & After',
+  description: 'Full transformation on a commercial attic job. Old insulation removed, the space cleaned and prepared, and white liner installed from start to finish.',
+};
+
 const delayClasses = ['', 'reveal-delay-1', 'reveal-delay-2'] as const;
+
+function FeaturedVideoCard({ visible }: { visible: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+
+    function onFullscreenChange() {
+      const fsEl =
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement;
+      if (!fsEl) {
+        el!.pause();
+        el!.currentTime = 0;
+        setPlaying(false);
+      }
+    }
+
+    function onWebkitEndFullscreen() {
+      el!.pause();
+      el!.currentTime = 0;
+      setPlaying(false);
+    }
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    document.addEventListener('mozfullscreenchange', onFullscreenChange);
+    document.addEventListener('MSFullscreenChange', onFullscreenChange);
+    el.addEventListener('webkitendfullscreen', onWebkitEndFullscreen);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', onFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', onFullscreenChange);
+      el.removeEventListener('webkitendfullscreen', onWebkitEndFullscreen);
+    };
+  }, []);
+
+  function handlePlay() {
+    const el = videoRef.current;
+    if (!el) return;
+    el.play().then(() => {
+      setPlaying(true);
+      if ((el as any).webkitEnterFullscreen) {
+        (el as any).webkitEnterFullscreen();
+        return;
+      }
+      const requestFS =
+        el.requestFullscreen?.bind(el) ||
+        (el as any).webkitRequestFullscreen?.bind(el) ||
+        (el as any).mozRequestFullScreen?.bind(el) ||
+        (el as any).msRequestFullscreen?.bind(el);
+      if (requestFS) requestFS().catch(() => {});
+    }).catch(() => {});
+  }
+
+  return (
+    <div className={`bg-white rounded-3xl overflow-hidden border border-neutral-200 shadow-md mb-10 reveal ${visible ? 'reveal-visible' : ''}`}>
+      {/* Featured label bar */}
+      <div className="flex items-center gap-3 px-7 pt-6 pb-4 border-b border-neutral-100">
+        <span className="bg-brand-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Featured</span>
+        <span className="text-neutral-400 text-xs font-medium">Commercial Transformation</span>
+      </div>
+
+      {/* Video */}
+      <div className="relative bg-neutral-900 overflow-hidden group" style={{ height: 'clamp(260px, 42vw, 520px)' }}>
+        <video
+          ref={videoRef}
+          className="w-full h-full object-cover"
+          preload="metadata"
+          playsInline
+          onPause={() => setPlaying(false)}
+          onEnded={() => setPlaying(false)}
+          aria-label={featuredVideo.title}
+        >
+          <source src={featuredVideo.src} type="video/mp4" />
+        </video>
+
+        {!playing && (
+          <button
+            onClick={handlePlay}
+            aria-label={`Play ${featuredVideo.title}`}
+            className="absolute inset-0 flex items-center justify-center bg-neutral-950/45 group-hover:bg-neutral-950/30 transition-colors duration-200"
+          >
+            <span className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-200">
+              <Play className="w-9 h-9 text-brand-500 ml-1" fill="currentColor" aria-hidden="true" />
+            </span>
+          </button>
+        )}
+      </div>
+
+      {/* Meta */}
+      <div className="px-7 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h3 className="font-bold text-neutral-900 text-lg mb-1">{featuredVideo.title}</h3>
+          <p className="text-neutral-500 text-sm leading-relaxed max-w-2xl">{featuredVideo.description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function VideoCard({ video, index, parentVisible }: { video: typeof videos[0]; index: number; parentVisible: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -144,6 +256,7 @@ function VideoCard({ video, index, parentVisible }: { video: typeof videos[0]; i
 
 export default function VideoShowcase() {
   const { ref: headerRef, visible: headerVisible } = useReveal();
+  const { ref: featuredRef, visible: featuredVisible } = useReveal();
   const { ref: cardsRef, visible: cardsVisible } = useReveal();
   const { ref: bridgeRef, visible: bridgeVisible } = useReveal();
 
@@ -163,6 +276,12 @@ export default function VideoShowcase() {
           </p>
         </div>
 
+        {/* Featured commercial video */}
+        <div ref={featuredRef as React.RefObject<HTMLDivElement>}>
+          <FeaturedVideoCard visible={featuredVisible} />
+        </div>
+
+        {/* Existing 3-video grid */}
         <div
           ref={cardsRef as React.RefObject<HTMLDivElement>}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
