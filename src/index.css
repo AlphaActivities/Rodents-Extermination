@@ -222,6 +222,7 @@
 .reveal.reveal-visible {
   opacity: 1;
   transform: translateY(0);
+  will-change: auto;
 }
 
 /* Slide in from left */
@@ -236,6 +237,7 @@
 .reveal-left.reveal-visible {
   opacity: 1;
   transform: translateX(0);
+  will-change: auto;
 }
 
 /* Slide in from right */
@@ -250,6 +252,7 @@
 .reveal-right.reveal-visible {
   opacity: 1;
   transform: translateX(0);
+  will-change: auto;
 }
 
 /* Scale up from slightly small */
@@ -264,6 +267,7 @@
 .reveal-scale.reveal-visible {
   opacity: 1;
   transform: scale(1);
+  will-change: auto;
 }
 
 /* Stagger delay utilities */
@@ -322,8 +326,43 @@
   }
 }
 
-/* ── Footer links: override global min-height tap target ─── */
-.footer-link {
+/* ── Footer row underline — full-row scaleX architecture ──── */
+
+/* The <li> is the row container and owns the underline pseudo-element.
+   The underline spans left:0 to right:0 (full column width) regardless
+   of the text length inside the <a>. scaleX animates on the GPU
+   compositor thread — zero layout reflow, no fractional width
+   interpolation, consistent 2px thickness on every link. */
+
+.footer-row {
+  position: relative;
+}
+
+.footer-row::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background-color: #2563eb; /* brand-500 */
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Force integer pixel rasterization — no sub-pixel bleed */
+  border-radius: 1px;
+  will-change: transform;
+}
+
+.footer-row:hover::after {
+  transform: scaleX(1);
+}
+
+/* The <a> fills the full row so the entire row is the click/hover target.
+   display:block collapses the inline-block text-width ownership. */
+.footer-row-link {
+  display: block;
+  width: 100%;
   min-height: unset !important;
 }
 
