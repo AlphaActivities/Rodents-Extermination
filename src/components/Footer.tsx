@@ -11,7 +11,7 @@ const navLinks = [
   { label: 'Contact', href: '#contact' },
 ];
 
-const services = [
+const atticServices = [
   { label: 'Blown-In Insulation', href: '#services' },
   { label: 'Insulation Removal', href: '#services' },
   { label: 'Attic Restoration', href: '#services' },
@@ -20,6 +20,9 @@ const services = [
   { label: 'Attic Inspection', href: '#services' },
   { label: 'Radiant Barrier', href: '#services' },
   { label: 'Commercial Attic Services', href: '#services' },
+];
+
+const wildlifeServices = [
   { label: 'Bird Removal', href: '#wildlife' },
   { label: 'Raccoon Removal', href: '#wildlife' },
   { label: 'Squirrel Removal', href: '#wildlife' },
@@ -73,10 +76,10 @@ export default function Footer() {
         ref={footerRef as React.RefObject<HTMLDivElement>}
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-10 border-b border-neutral-800 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 pb-10 border-b border-neutral-800 items-start">
 
           {/* Brand */}
-          <div className={`lg:col-span-1 flex flex-col reveal ${footerVisible ? 'reveal-visible' : ''}`}>
+          <div className={`sm:col-span-2 lg:col-span-1 flex flex-col reveal ${footerVisible ? 'reveal-visible' : ''}`}>
             <div className="flex justify-start mb-2">
               <img
                 src="/logo/white_logo.PNG"
@@ -115,18 +118,33 @@ export default function Footer() {
           {/* Navigation */}
           <div className={`flex flex-col reveal reveal-delay-1 ${footerVisible ? 'reveal-visible' : ''}`}>
             <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Navigation</h3>
-            <ul className="flex flex-col justify-between flex-1">
+            <ul className="flex flex-col gap-y-0.5">
               {navLinks.map((link) => (
                 <FooterLink key={link.href} href={link.href} label={link.label} />
               ))}
             </ul>
           </div>
 
-          {/* Services */}
+          {/* Attic Services */}
           <div className={`flex flex-col reveal reveal-delay-2 ${footerVisible ? 'reveal-visible' : ''}`}>
-            <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Services</h3>
-            <ul className="flex flex-col justify-between flex-1">
-              {services.map((service) => (
+            <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Attic Services</h3>
+            <ul className="flex flex-col gap-y-0.5">
+              {atticServices.map((service) => (
+                <FooterLink
+                  key={service.label}
+                  href={service.href}
+                  label={service.label}
+                  ariaLabel={`Learn more about ${service.label}`}
+                />
+              ))}
+            </ul>
+          </div>
+
+          {/* Wildlife Services */}
+          <div className={`flex flex-col reveal reveal-delay-3 ${footerVisible ? 'reveal-visible' : ''}`}>
+            <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Wildlife Services</h3>
+            <ul className="flex flex-col gap-y-0.5">
+              {wildlifeServices.map((service) => (
                 <FooterLink
                   key={service.label}
                   href={service.href}
@@ -138,7 +156,7 @@ export default function Footer() {
           </div>
 
           {/* Contact + Service Areas */}
-          <div className={`reveal reveal-delay-3 ${footerVisible ? 'reveal-visible' : ''}`}>
+          <div className={`reveal reveal-delay-4 ${footerVisible ? 'reveal-visible' : ''}`}>
             <h3 className="text-white font-semibold text-xs mb-5 uppercase tracking-widest">Contact</h3>
             <ul className="space-y-3 mb-5">
               <li className="flex items-start gap-3">
@@ -173,7 +191,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className={`pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-neutral-500 text-xs reveal reveal-delay-4 ${footerVisible ? 'reveal-visible' : ''}`}>
+        <div className={`pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-neutral-500 text-xs reveal reveal-delay-5 ${footerVisible ? 'reveal-visible' : ''}`}>
           <p>&copy; {new Date().getFullYear()} Rodents Exterm &amp; Insulation LLC. All rights reserved.</p>
           <p>Fort Worth attic insulation &amp; restoration. Serving the DFW Metroplex.</p>
         </div>
