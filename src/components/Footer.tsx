@@ -51,19 +51,19 @@ const serviceAreas = [
 
 function FooterLink({ href, label, ariaLabel }: { href: string; label: string; ariaLabel?: string }) {
   return (
-    <li className="group">
+    <li className="group relative">
       <a
         href={href}
         aria-label={ariaLabel}
-        className="relative inline-block text-neutral-400 group-hover:text-white text-sm transition-colors duration-200 py-2"
+        className="block text-neutral-400 group-hover:text-white text-sm transition-colors duration-200 pb-2 pt-2"
         style={{ minHeight: 'unset' }}
       >
         {label}
-        <span
-          className="absolute bottom-1.5 left-0 h-[2px] bg-brand-500 w-0 group-hover:w-full transition-[width] duration-300 ease-out"
-          aria-hidden="true"
-        />
       </a>
+      <span
+        className="absolute bottom-0 left-0 h-[2px] bg-brand-500 w-0 group-hover:w-full transition-[width] duration-300 ease-out"
+        aria-hidden="true"
+      />
     </li>
   );
 }
