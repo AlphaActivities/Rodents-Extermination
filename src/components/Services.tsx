@@ -56,7 +56,7 @@ const services = [
     title: 'Commercial Attic Services',
     description: 'We also handle select commercial insulation and attic restoration projects. If the space needs cleaner insulation, better thermal control, or documented attic cleanup, Steven can inspect it and give you a clear plan.',
     highlight: 'Commercial',
-    image: '/images/Success_image03.jpg',
+    image: '/images/commercial_after_wide.webp',
   },
 ];
 

@@ -29,6 +29,19 @@ const jobs = [
       objectPosition: 'center 60%',
     },
   },
+  {
+    label: 'Commercial',
+    before: {
+      src: '/images/commercial_before.webp',
+      alt: 'Commercial ceiling before insulation liner installation',
+      objectPosition: 'center',
+    },
+    after: {
+      src: '/images/commercial_after_liner.webp',
+      alt: 'Completed commercial ceiling insulation liner installation',
+      objectPosition: 'center',
+    },
+  },
 ];
 
 const beforePoints = [
