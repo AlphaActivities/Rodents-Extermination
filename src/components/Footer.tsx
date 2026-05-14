@@ -84,7 +84,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-neutral-400 text-sm leading-relaxed mb-3 text-balance">
-              Owner-operated residential and commercial attic insulation and restoration in Fort Worth and the DFW Metroplex. Free estimates available.
+              Owner-operated residential and commercial attic insulation and restoration in Fort Worth and the DFW Metroplex.
             </p>
             <ul className="space-y-1 mb-4">
               {[
@@ -178,7 +178,7 @@ export default function Footer() {
 
             <a
               href="tel:9728046456"
-              className="mt-auto inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-4 py-2.5 rounded-xl transition-all duration-200 text-sm hover:-translate-y-0.5 shadow-sm min-h-[44px] self-start pt-5"
+              className="mt-auto inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-4 py-2.5 rounded-xl transition-all duration-200 text-sm hover:-translate-y-0.5 shadow-sm min-h-[44px] self-start"
               aria-label="Call Rodents Exterm and Insulation LLC"
             >
               <Phone className="w-4 h-4" aria-hidden="true" />
