@@ -152,7 +152,7 @@ export default function Footer() {
           </div>
 
           {/* Contact + Service Areas */}
-          <div className={`flex flex-col reveal reveal-delay-4 ${footerVisible ? 'reveal-visible' : ''}`}>
+          <div className={`reveal reveal-delay-4 ${footerVisible ? 'reveal-visible' : ''}`}>
             <h3 className="text-white font-semibold text-xs mb-6 uppercase tracking-widest">Contact</h3>
             <ul className="space-y-3 mb-5">
               <li className="flex items-start gap-3">
@@ -176,15 +176,13 @@ export default function Footer() {
               </li>
             </ul>
 
-            <div className="mt-auto">
-              <h3 className="text-white font-semibold text-xs mb-2.5 uppercase tracking-widest">Service Areas</h3>
-              <ul className="grid grid-cols-2 gap-x-3 gap-y-1">
-                {serviceAreas.map((area) => (
-                  <li key={area} className="text-neutral-500 text-xs">{area}</li>
-                ))}
-                <li className="col-span-2 text-neutral-600 text-xs pt-0.5">& surrounding DFW communities</li>
-              </ul>
-            </div>
+            <h3 className="text-white font-semibold text-xs mb-2.5 uppercase tracking-widest">Service Areas</h3>
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-1">
+              {serviceAreas.map((area) => (
+                <li key={area} className="text-neutral-500 text-xs">{area}</li>
+              ))}
+              <li className="col-span-2 text-neutral-600 text-xs pt-0.5">& surrounding DFW communities</li>
+            </ul>
           </div>
         </div>
 
