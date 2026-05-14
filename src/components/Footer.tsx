@@ -172,7 +172,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-brand-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                <span className="text-neutral-400 text-sm">Fort Worth, TX &amp; DFW Area</span>
+                <span className="text-neutral-400 text-sm">Fort Worth, &amp; DFW Area</span>
               </li>
             </ul>
 
