@@ -482,11 +482,6 @@
 
 /* ── Loading Screen ──────────────────────────────────────── */
 
-@keyframes loading-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
 @keyframes loading-logo-up {
   from { opacity: 0; transform: translateY(16px) scale(0.96); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
@@ -501,31 +496,80 @@
   to { transform: rotate(360deg); }
 }
 
-@keyframes loading-exit {
+/* Content exits: shrinks + fades before the curtains move */
+@keyframes loading-content-out {
   0%   { opacity: 1; transform: scale(1); }
-  80%  { opacity: 0; transform: scale(1.015); }
-  100% { opacity: 0; transform: scale(1.015); pointer-events: none; }
+  100% { opacity: 0; transform: scale(0.88); }
 }
 
-/* Overlay — sits above everything, below the fixed header (z-40) */
+/* Top curtain slides upward */
+@keyframes loading-curtain-top-out {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+/* Bottom curtain slides downward */
+@keyframes loading-curtain-bottom-out {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+
+/* ── Shell — invisible container that keeps z-index context alive ── */
 .loading-screen {
   position: fixed;
   inset: 0;
   z-index: 45;
+  pointer-events: all;
+  /* No background — the curtain panels provide the white fill */
+}
+
+/* Once exit is triggered, block all pointer events on the whole shell */
+.loading-screen--exit {
+  pointer-events: none;
+}
+
+/* ── Curtain panels ─────────────────────────────────────── */
+.loading-curtain {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: #ffffff;
+}
+
+.loading-curtain--top {
+  top: 0;
+}
+
+.loading-curtain--bottom {
+  bottom: 0;
+}
+
+/* Curtains animate after the content has finished collapsing.
+   Content collapse: 0 → 280ms
+   Curtain slide:   280ms → 780ms  (500ms travel, snappy ease)     */
+.loading-screen--exit .loading-curtain--top {
+  animation: loading-curtain-top-out 0.55s cubic-bezier(0.76, 0, 0.24, 1) 0.28s both;
+}
+
+.loading-screen--exit .loading-curtain--bottom {
+  animation: loading-curtain-bottom-out 0.55s cubic-bezier(0.76, 0, 0.24, 1) 0.28s both;
+}
+
+/* ── Content centred between the two curtains ───────────── */
+.loading-content {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0;
-  background: #ffffff;
-  pointer-events: all;
+  z-index: 1; /* above both curtain panels */
 }
 
-/* Header peeks above (z-50 in Header component) so we don't need to do anything special */
-
-.loading-screen--exit {
-  animation: loading-exit 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
-  pointer-events: none;
+.loading-content--exit {
+  animation: loading-content-out 0.28s cubic-bezier(0.4, 0, 1, 1) 0s both;
 }
 
 /* Logo image */
@@ -778,10 +822,15 @@
     animation: none;
   }
 
-  .loading-screen--exit {
+  .loading-content--exit {
     animation: none;
     opacity: 0;
-    pointer-events: none;
+  }
+
+  .loading-screen--exit .loading-curtain--top,
+  .loading-screen--exit .loading-curtain--bottom {
+    animation: none;
+    display: none;
   }
 
 }
