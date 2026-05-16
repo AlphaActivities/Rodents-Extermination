@@ -112,7 +112,7 @@ What Actually Fixes These Problems
                 <div className="relative z-20 p-7 flex flex-col flex-1">
                   {/* Icon + badge row */}
                   <div className="flex items-start justify-between mb-5">
-                    <div className="w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center group-hover:bg-brand-600 transition-colors duration-200 shadow-sm">
+                    <div className="service-card-icon w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center shadow-sm">
                       <Icon className="w-6 h-6 text-white" />
                     </div>
                     {service.highlight && (
@@ -127,10 +127,10 @@ What Actually Fixes These Problems
 
                   <a
                     href="tel:9728046456"
-                    className="inline-flex items-center gap-1.5 text-brand-400 hover:text-brand-300 font-semibold text-sm mt-6 group/link"
+                    className="service-card-link inline-flex items-center gap-1.5 text-brand-400 font-semibold text-sm mt-6"
                   >
                     Call Steven Now
-                    <ArrowRight className="w-4 h-4 group-hover/link:translate-x-0.5 transition-transform duration-150" />
+                    <ArrowRight className="service-card-arrow w-4 h-4" />
                   </a>
                 </div>
               </div>

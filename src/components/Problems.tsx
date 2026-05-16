@@ -68,12 +68,12 @@ export default function Problems() {
             return (
               <div
                 key={problem.title}
-                className={`problem-tile group reveal ${delayClasses[i]} ${cardsVisible ? 'reveal-visible' : ''}`}
+                className={`problem-tile reveal ${delayClasses[i]} ${cardsVisible ? 'reveal-visible' : ''}`}
               >
                 <div className="problem-tile-top-line" />
                 <div className="p-7">
                   <div className="problem-tile-icon mb-5">
-                    <Icon className="w-5 h-5 text-brand-500 relative z-10 group-hover:text-brand-400 transition-colors duration-300" />
+                    <Icon className="w-5 h-5 text-brand-500 relative z-10" />
                   </div>
                   <h3 className="text-base font-semibold text-neutral-900 mb-2 tracking-tight">{problem.title}</h3>
                   <p className="text-neutral-500 text-sm leading-relaxed">{problem.description}</p>

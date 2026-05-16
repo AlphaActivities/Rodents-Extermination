@@ -349,13 +349,14 @@
   transform: scaleX(0);
   transform-origin: left center;
   transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-  /* Force integer pixel rasterization — no sub-pixel bleed */
   border-radius: 1px;
   will-change: transform;
 }
 
-.footer-row:hover::after {
-  transform: scaleX(1);
+@media (hover: hover) {
+  .footer-row:hover::after {
+    transform: scaleX(1);
+  }
 }
 
 /* The <a> fills the full row so the entire row is the click/hover target.
@@ -639,6 +640,64 @@
   position: relative;
   box-shadow: 0 1px 4px rgba(37, 99, 235, 0.08);
   transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+/* ── Service / Wildlife card interior states ─────────────── */
+
+/* Card icon: always visible base color; darken on hover (pointer) or tap (touch) */
+.service-card-icon {
+  transition: background-color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .card-luxury-hover:hover .service-card-icon {
+    background-color: #1d4ed8; /* brand-600 */
+  }
+}
+
+.card-luxury-hover:active .service-card-icon {
+  background-color: #1d4ed8;
+}
+
+/* Card call-link arrow: slide right on hover (pointer) or tap (touch) */
+.service-card-arrow {
+  transition: transform 0.15s ease;
+}
+
+@media (hover: hover) {
+  .service-card-link:hover .service-card-arrow {
+    transform: translateX(3px);
+  }
+}
+
+.service-card-link:active .service-card-arrow {
+  transform: translateX(3px);
+}
+
+/* Video play button: scale + lighten overlay on hover (pointer) or tap (touch) */
+.video-play-overlay {
+  transition: background-color 0.2s ease;
+}
+
+.video-play-btn {
+  transition: transform 0.2s ease;
+}
+
+@media (hover: hover) {
+  .video-play-group:hover .video-play-overlay {
+    background-color: rgba(3, 7, 18, 0.30);
+  }
+  .video-play-group:hover .video-play-btn {
+    transform: scale(1.10);
+  }
+}
+
+.video-play-group:active .video-play-overlay {
+  background-color: rgba(3, 7, 18, 0.20);
+}
+
+.video-play-group:active .video-play-btn {
+  transform: scale(1.05);
 }
 
 /* ── Global reduced-motion safety net ────────────────────── */

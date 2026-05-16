@@ -146,7 +146,7 @@ function FeaturedVideoCard({ visible }: { visible: boolean }) {
       </div>
 
       {/* Video */}
-      <div className="relative bg-neutral-900 overflow-hidden group" style={{ height: 'clamp(260px, 42vw, 520px)' }}>
+      <div className="video-play-group relative bg-neutral-900 overflow-hidden" style={{ height: 'clamp(260px, 42vw, 520px)' }}>
         <video
           ref={videoRef}
           className="w-full h-full object-cover"
@@ -164,9 +164,9 @@ function FeaturedVideoCard({ visible }: { visible: boolean }) {
           <button
             onClick={handlePlay}
             aria-label={`Play ${featuredVideo.title}`}
-            className="absolute inset-0 flex items-center justify-center bg-neutral-950/45 group-hover:bg-neutral-950/30 transition-colors duration-200"
+            className="video-play-overlay absolute inset-0 flex items-center justify-center bg-neutral-950/45"
           >
-            <span className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-200">
+            <span className="video-play-btn w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl">
               <Play className="w-9 h-9 text-brand-500 ml-1" fill="currentColor" aria-hidden="true" />
             </span>
           </button>
@@ -264,7 +264,7 @@ function VideoCard({ video, index, parentVisible }: { video: typeof videos[0]; i
 
   return (
     <div className={`bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm video-card-hover flex flex-col reveal ${delayClasses[index]} ${parentVisible ? 'reveal-visible' : ''}`}>
-      <div className="relative h-52 bg-neutral-900 overflow-hidden group">
+      <div className="video-play-group relative h-52 bg-neutral-900 overflow-hidden">
         {/* Index badge */}
         <div className="absolute top-3 left-3 w-7 h-7 bg-brand-500 rounded-md flex items-center justify-center z-10 pointer-events-none">
           <span className="text-white font-bold text-xs">{index + 1}</span>
@@ -289,9 +289,9 @@ function VideoCard({ video, index, parentVisible }: { video: typeof videos[0]; i
           <button
             onClick={handlePlay}
             aria-label={`Play ${video.title}`}
-            className="absolute inset-0 flex items-center justify-center bg-neutral-950/40 group-hover:bg-neutral-950/30 transition-colors duration-200"
+            className="video-play-overlay absolute inset-0 flex items-center justify-center bg-neutral-950/40"
           >
-            <span className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-200">
+            <span className="video-play-btn w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl">
               <Play className="w-7 h-7 text-brand-500 ml-1" fill="currentColor" aria-hidden="true" />
             </span>
           </button>
