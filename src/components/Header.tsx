@@ -134,8 +134,9 @@ export default function Header() {
               key={link.href}
               href={link.href}
               onClick={() => setMenuOpen(false)}
-              className="flex items-center text-base font-medium text-neutral-700 hover:text-brand-500 hover:bg-neutral-50 px-4 py-3.5 rounded-xl transition-colors min-h-[52px]"
+              className="flex items-center gap-3 text-base font-medium text-neutral-700 hover:text-brand-500 hover:bg-neutral-50 px-4 py-3.5 rounded-xl transition-colors min-h-[52px]"
             >
+              <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" aria-hidden="true" />
               {link.label}
             </a>
           ))}
