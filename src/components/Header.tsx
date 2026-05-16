@@ -40,13 +40,17 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-[72px]">
 
-          {/* Logo — black version for light header background */}
-          <a href="#home" className="flex items-center flex-shrink-0 min-h-[44px]">
+          {/* Logo + company name */}
+          <a href="#home" className="flex items-center gap-3 flex-shrink-0 min-h-[44px] group">
             <img
               src="/logo/black_logo.PNG"
               alt="Rodents Exterm & Insulation LLC"
-              className="h-12 sm:h-14 lg:h-[60px] w-auto object-contain"
+              className="h-12 sm:h-14 lg:h-[60px] w-auto object-contain transition-transform duration-300 ease-out group-hover:scale-110"
             />
+            <div className="flex flex-col leading-tight">
+              <span className="font-bold text-neutral-900 text-sm sm:text-base lg:text-[15px] tracking-tight">Rodents Exterm</span>
+              <span className="font-normal text-neutral-500 text-xs sm:text-sm lg:text-[13px] tracking-tight">& Insulation LLC</span>
+            </div>
           </a>
 
           {/* Desktop nav */}
