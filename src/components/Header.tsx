@@ -49,7 +49,7 @@ export default function Header() {
             />
             <div className="flex flex-col leading-tight">
               <span className="font-bold text-neutral-900 text-sm sm:text-base lg:text-[15px] tracking-tight">Rodents Exterm</span>
-              <span className="font-normal text-neutral-500 text-xs sm:text-sm lg:text-[13px] tracking-tight">& Insulation LLC</span>
+              <span className="font-normal text-neutral-700 text-xs sm:text-sm lg:text-[13px] tracking-tight">& Insulation LLC</span>
             </div>
           </a>
 
