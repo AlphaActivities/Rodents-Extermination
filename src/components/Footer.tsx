@@ -1,5 +1,6 @@
 import { Phone, Mail, MapPin } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { trackCall, trackNavClick, trackSectionView } from '../analytics';
 
 const navLinks = [
   { label: 'Home', href: '#home' },
@@ -49,12 +50,13 @@ const serviceAreas = [
   'Crowley',
 ];
 
-function FooterLink({ href, label, ariaLabel, showDot }: { href: string; label: string; ariaLabel?: string; showDot?: boolean }) {
+function FooterLink({ href, label, ariaLabel, showDot, onClick }: { href: string; label: string; ariaLabel?: string; showDot?: boolean; onClick?: () => void }) {
   return (
     <li className="footer-row">
       <a
         href={href}
         aria-label={ariaLabel}
+        onClick={onClick}
         className="footer-row-link text-neutral-400 hover:text-white text-sm transition-colors duration-200 py-2"
       >
         {showDot ? (
@@ -69,7 +71,7 @@ function FooterLink({ href, label, ariaLabel, showDot }: { href: string; label: 
 }
 
 export default function Footer() {
-  const { ref: footerRef, visible: footerVisible } = useReveal();
+  const { ref: footerRef, visible: footerVisible } = useReveal(() => trackSectionView('footer'));
 
   return (
     <footer className="bg-neutral-900 text-neutral-300">
@@ -113,7 +115,13 @@ export default function Footer() {
             <h3 className="text-white font-semibold text-xs mb-6 uppercase tracking-widest">Navigation</h3>
             <ul className="flex flex-col gap-1.5">
               {navLinks.map((link) => (
-                <FooterLink key={link.href} href={link.href} label={link.label} showDot />
+                <FooterLink
+                  key={link.href}
+                  href={link.href}
+                  label={link.label}
+                  showDot
+                  onClick={() => trackNavClick(link.label.toLowerCase(), 'footer')}
+                />
               ))}
             </ul>
           </div>
@@ -128,6 +136,7 @@ export default function Footer() {
                   href={service.href}
                   label={service.label}
                   ariaLabel={`Learn more about ${service.label}`}
+                  onClick={() => trackNavClick('services', 'footer')}
                 />
               ))}
             </ul>
@@ -143,6 +152,7 @@ export default function Footer() {
                   href={service.href}
                   label={service.label}
                   ariaLabel={`Learn more about ${service.label}`}
+                  onClick={() => trackNavClick('wildlife', 'footer')}
                 />
               ))}
             </ul>
@@ -156,6 +166,7 @@ export default function Footer() {
                 <Phone className="w-4 h-4 text-brand-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <a
                   href="tel:9728046456"
+                  onClick={() => trackCall('footer_phone_text', 'footer')}
                   className="text-neutral-400 hover:text-white text-sm transition-colors duration-200"
                   style={{ minHeight: 'unset' }}
                   aria-label="Call (972) 804-6456"
@@ -183,6 +194,7 @@ export default function Footer() {
 
             <a
               href="tel:9728046456"
+              onClick={() => trackCall('footer_call_cta', 'footer')}
               className="mt-6 inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-4 py-2.5 rounded-xl transition-all duration-200 text-sm hover:-translate-y-0.5 shadow-sm min-h-[44px] self-start"
               aria-label="Call Rodents Exterm and Insulation LLC"
             >

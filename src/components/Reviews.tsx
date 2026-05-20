@@ -1,5 +1,6 @@
 import { Star, Quote } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { trackCall, trackSectionView } from '../analytics';
 
 const reviews = [
   {
@@ -33,7 +34,7 @@ function StarRating({ count }: { count: number }) {
 }
 
 export default function Reviews() {
-  const { ref: headerRef, visible: headerVisible } = useReveal();
+  const { ref: headerRef, visible: headerVisible } = useReveal(() => trackSectionView('reviews'));
   const { ref: cardsRef, visible: cardsVisible } = useReveal();
   const { ref: ctaRef, visible: ctaVisible } = useReveal();
 
@@ -112,6 +113,7 @@ export default function Reviews() {
           <p className="text-neutral-400 text-xs mb-6">Serving Fort Worth and the DFW area. See if we cover your neighborhood below.</p>
           <a
             href="tel:9728046456"
+            onClick={() => trackCall('reviews_cta', 'reviews')}
             className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 btn-luxury-glow"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

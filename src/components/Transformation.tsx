@@ -1,6 +1,7 @@
 import { X, Check, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { useReveal } from '../hooks/useReveal';
+import { trackCall, trackNavClick, trackSectionView } from '../analytics';
 
 const jobs = [
   {
@@ -64,7 +65,7 @@ const afterPoints = [
 
 export default function Transformation() {
   const [activeJob, setActiveJob] = useState(0);
-  const { ref: headerRef, visible: headerVisible } = useReveal();
+  const { ref: headerRef, visible: headerVisible } = useReveal(() => trackSectionView('transformation'));
   const { ref: beforeRef, visible: beforeVisible } = useReveal();
   const { ref: afterRef, visible: afterVisible } = useReveal();
   const { ref: ctaRef, visible: ctaVisible } = useReveal();
@@ -218,12 +219,14 @@ export default function Transformation() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-sm sm:max-w-none mx-auto w-full">
             <a
               href="tel:9728046456"
+              onClick={() => trackCall('transformation_cta', 'transformation')}
               className="inline-flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold px-8 py-4 rounded-xl transition-all duration-200 shadow-lg hover:-translate-y-0.5 active:scale-95 w-full sm:w-auto min-h-[52px]"
             >
               Call Steven Now
             </a>
             <a
               href="#contact"
+              onClick={() => trackNavClick('contact', 'transformation_cta')}
               className="inline-flex items-center justify-center gap-2 bg-white text-neutral-900 hover:bg-neutral-100 font-semibold px-8 py-4 rounded-xl transition-all duration-200 shadow-xl hover:-translate-y-0.5 active:scale-95 w-full sm:w-auto min-h-[52px]"
             >
               Request Free Estimate

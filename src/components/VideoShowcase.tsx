@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { Play } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { trackVideoPlay, trackVideoComplete, trackSectionView } from '../analytics';
 
 function usePoster(src: string): string | undefined {
   const [poster, setPoster] = useState<string | undefined>(undefined);
@@ -54,16 +55,19 @@ const videos = [
   {
     src: '/videos/in_action.MP4',
     title: 'Steven In Action',
+    slug: 'steven_in_action',
     description: 'Watch Steven Guerrero at work during a real attic job. The same person you speak with on the phone is the one doing the work.',
   },
   {
     src: '/videos/Sucking_up.MP4',
     title: 'Attic Cleanup In Progress',
+    slug: 'attic_cleanup',
     description: 'Real footage of the removal process: old insulation, debris, and contaminated material being extracted from a DFW attic.',
   },
   {
     src: '/videos/finish.MP4',
     title: 'Finishing The Job',
+    slug: 'finishing_the_job',
     description: 'The final stage of an insulation installation. Sealing and padding applied from a sky lift to lock in the work properly.',
   },
 ];
@@ -75,6 +79,8 @@ const featuredVideo = {
 };
 
 const delayClasses = ['', 'reveal-delay-1', 'reveal-delay-2'] as const;
+
+const FEATURED_SLUG = 'commercial_before_after';
 
 function FeaturedVideoCard({ visible }: { visible: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -124,6 +130,7 @@ function FeaturedVideoCard({ visible }: { visible: boolean }) {
     if (!el) return;
     el.play().then(() => {
       setPlaying(true);
+      trackVideoPlay(featuredVideo.title, FEATURED_SLUG);
       if ((el as any).webkitEnterFullscreen) {
         (el as any).webkitEnterFullscreen();
         return;
@@ -154,7 +161,7 @@ function FeaturedVideoCard({ visible }: { visible: boolean }) {
           playsInline
           poster={poster}
           onPause={() => setPlaying(false)}
-          onEnded={() => setPlaying(false)}
+          onEnded={() => { setPlaying(false); trackVideoComplete(featuredVideo.title, FEATURED_SLUG); }}
           aria-label={featuredVideo.title}
         >
           <source src={featuredVideo.src} type="video/mp4" />
@@ -184,7 +191,7 @@ function FeaturedVideoCard({ visible }: { visible: boolean }) {
   );
 }
 
-function VideoCard({ video, index, parentVisible }: { video: typeof videos[0]; index: number; parentVisible: boolean }) {
+function VideoCard({ video, index, parentVisible }: { video: (typeof videos)[0]; index: number; parentVisible: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const poster = usePoster(video.src);
@@ -236,6 +243,7 @@ function VideoCard({ video, index, parentVisible }: { video: typeof videos[0]; i
 
     el.play().then(() => {
       setPlaying(true);
+      trackVideoPlay(video.title, video.slug);
 
       // iOS Safari: use webkitEnterFullscreen directly on the video element
       if ((el as any).webkitEnterFullscreen) {
@@ -260,6 +268,7 @@ function VideoCard({ video, index, parentVisible }: { video: typeof videos[0]; i
 
   function handleEnded() {
     setPlaying(false);
+    trackVideoComplete(video.title, video.slug);
   }
 
   return (
@@ -307,7 +316,7 @@ function VideoCard({ video, index, parentVisible }: { video: typeof videos[0]; i
 }
 
 export default function VideoShowcase() {
-  const { ref: headerRef, visible: headerVisible } = useReveal();
+  const { ref: headerRef, visible: headerVisible } = useReveal(() => trackSectionView('gallery'));
   const { ref: featuredRef, visible: featuredVisible } = useReveal();
   const { ref: cardsRef, visible: cardsVisible } = useReveal();
   const { ref: bridgeRef, visible: bridgeVisible } = useReveal();

@@ -1,5 +1,6 @@
 import { Wind, Trash2, Home, Bug, Lock, Search, Sun, Building2, ArrowRight } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { trackCall, trackSectionView } from '../analytics';
 
 const services = [
   {
@@ -63,7 +64,7 @@ const services = [
 const delayClasses = ['', 'reveal-delay-1', 'reveal-delay-2', 'reveal-delay-3', 'reveal-delay-4', 'reveal-delay-5', 'reveal-delay-6', 'reveal-delay-7'] as const;
 
 export default function Services() {
-  const { ref: headerRef, visible: headerVisible } = useReveal();
+  const { ref: headerRef, visible: headerVisible } = useReveal(() => trackSectionView('services'));
   const { ref: cardsRef, visible: cardsVisible } = useReveal();
   const { ref: bridgeRef, visible: bridgeVisible } = useReveal();
 
@@ -127,6 +128,7 @@ What Actually Fixes These Problems
 
                   <a
                     href="tel:9728046456"
+                    onClick={() => trackCall('services_card', 'services', service.title)}
                     className="service-card-link inline-flex items-center gap-1.5 text-brand-400 font-semibold text-sm mt-6"
                   >
                     Call Steven Now

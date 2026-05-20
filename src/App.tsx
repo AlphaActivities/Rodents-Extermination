@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { initScrollTracking } from './analytics';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Problems from './components/Problems';
@@ -23,6 +24,11 @@ function App() {
     window.scrollTo(0, 0);
     const timer = setTimeout(() => setLoading(false), 1200);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const cleanup = initScrollTracking();
+    return cleanup;
   }, []);
 
   return (

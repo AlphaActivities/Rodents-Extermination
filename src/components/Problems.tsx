@@ -1,5 +1,6 @@
 import { Zap, Thermometer, AlertTriangle, Rat, Wind, Eye, Phone } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { trackCall, trackSectionView } from '../analytics';
 
 const problems = [
   {
@@ -37,7 +38,7 @@ const problems = [
 const delayClasses = ['', 'reveal-delay-1', 'reveal-delay-2', 'reveal-delay-3', 'reveal-delay-4', 'reveal-delay-5'] as const;
 
 export default function Problems() {
-  const { ref: headerRef, visible: headerVisible } = useReveal();
+  const { ref: headerRef, visible: headerVisible } = useReveal(() => trackSectionView('problems'));
   const { ref: cardsRef, visible: cardsVisible } = useReveal();
   const { ref: bridgeRef, visible: bridgeVisible } = useReveal();
 
@@ -90,7 +91,7 @@ export default function Problems() {
         >
           <p className="text-neutral-700 mb-2">Most of these don't start as big problems. They build quietly over time.</p>
           <p className="text-neutral-600 text-sm mb-6">Below are the specific things that actually fix each one of them.</p>
-          <a href="tel:9728046456" className="btn-primary min-h-[52px] px-8">
+          <a href="tel:9728046456" onClick={() => trackCall('problems_bridge_cta', 'problems')} className="btn-primary min-h-[52px] px-8">
             <Phone className="w-4 h-4" />
             Call Steven Now
           </a>

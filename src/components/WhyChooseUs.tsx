@@ -1,5 +1,6 @@
 import { UserCheck, DollarSign, Sparkles, Home, MessageCircle, Heart } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { trackCall, trackNavClick, trackSectionView } from '../analytics';
 
 const reasons = [
   {
@@ -35,7 +36,7 @@ const reasons = [
 ];
 
 export default function WhyChooseUs() {
-  const { ref: imageRef, visible: imageVisible } = useReveal();
+  const { ref: imageRef, visible: imageVisible } = useReveal(() => trackSectionView('why_choose_us'));
   const { ref: headingRef, visible: headingVisible } = useReveal();
   const { ref: reasonsRef, visible: reasonsVisible } = useReveal();
   const { ref: ctaRef, visible: ctaVisible } = useReveal();
@@ -127,6 +128,7 @@ export default function WhyChooseUs() {
             >
               <a
                 href="tel:9728046456"
+                onClick={() => trackCall('why_choose_us_cta', 'why_choose_us')}
                 className="inline-flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-6 py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 w-full sm:w-auto min-h-[52px]"
               >
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,6 +138,7 @@ export default function WhyChooseUs() {
               </a>
               <a
                 href="#contact"
+                onClick={() => trackNavClick('contact', 'why_choose_us_cta')}
                 className="inline-flex items-center justify-center gap-2 border-2 border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white font-semibold px-6 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-95 w-full sm:w-auto min-h-[52px]"
               >
                 Request Free Estimate

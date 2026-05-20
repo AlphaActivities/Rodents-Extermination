@@ -1,8 +1,9 @@
 import { Phone, ClipboardList } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { trackCall, trackNavClick, trackSectionView } from '../analytics';
 
 export default function FinalCTA() {
-  const { ref: headerRef, visible: headerVisible } = useReveal();
+  const { ref: headerRef, visible: headerVisible } = useReveal(() => trackSectionView('final_cta'));
   const { ref: phoneRef, visible: phoneVisible } = useReveal();
   const { ref: ctaRef, visible: ctaVisible } = useReveal();
 
@@ -65,6 +66,7 @@ export default function FinalCTA() {
         >
           <a
             href="tel:9728046456"
+            onClick={() => trackCall('final_cta_primary', 'final_cta')}
             className="inline-flex items-center justify-center gap-2 bg-white text-brand-600 hover:bg-brand-50 font-bold px-8 py-4 rounded-xl transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:scale-95 text-base w-full sm:w-auto min-h-[52px] btn-luxury-glow"
           >
             <Phone className="w-5 h-5" />
@@ -72,6 +74,7 @@ export default function FinalCTA() {
           </a>
           <a
             href="#contact"
+            onClick={() => trackNavClick('contact', 'final_cta')}
             className="inline-flex items-center justify-center gap-2 border-2 border-white/40 text-white hover:border-white hover:bg-white/10 font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-95 text-base w-full sm:w-auto min-h-[52px]"
           >
             <ClipboardList className="w-5 h-5" />

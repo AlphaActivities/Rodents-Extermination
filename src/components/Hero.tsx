@@ -1,8 +1,12 @@
 import { Phone, ClipboardList, ChevronDown } from 'lucide-react';
+import { useReveal } from '../hooks/useReveal';
+import { trackCall, trackNavClick, trackSectionView } from '../analytics';
 
 export default function Hero() {
+  const { ref: sectionRef } = useReveal<HTMLElement>(() => trackSectionView('hero'));
+
   return (
-    <section id="home" className="relative min-h-screen flex items-center pt-16 lg:pt-[72px] overflow-hidden hero-shimmer">
+    <section ref={sectionRef} id="home" className="relative min-h-screen flex items-center pt-16 lg:pt-[72px] overflow-hidden hero-shimmer">
       {/* Full-bleed background photo */}
       <div className="absolute inset-0 pointer-events-none">
         <img
@@ -71,6 +75,7 @@ export default function Hero() {
             <div className="hero-ctas flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-12">
               <a
                 href="tel:9728046456"
+                onClick={() => trackCall('hero_primary_cta', 'hero')}
                 className="inline-flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold px-8 py-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 text-base w-full sm:w-auto min-h-[52px] btn-luxury-glow"
               >
                 <Phone className="w-5 h-5 flex-shrink-0" />
@@ -78,6 +83,7 @@ export default function Hero() {
               </a>
               <a
                 href="#contact"
+                onClick={() => trackNavClick('contact', 'hero_secondary_cta')}
                 className="inline-flex items-center justify-center gap-2 border-2 border-white/40 text-white hover:border-brand-400 hover:text-brand-300 font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-95 text-base bg-white/10 backdrop-blur-sm w-full sm:w-auto min-h-[52px]"
               >
                 <ClipboardList className="w-5 h-5 flex-shrink-0" />
@@ -159,6 +165,7 @@ export default function Hero() {
       {/* Scroll cue */}
       <a
         href="#problems"
+        onClick={() => trackNavClick('problems', 'hero_scroll_cue')}
         className="hidden sm:flex absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-white/50 hover:text-brand-400 transition-colors flex-col items-center gap-1"
         aria-label="Scroll to attic problems section"
       >

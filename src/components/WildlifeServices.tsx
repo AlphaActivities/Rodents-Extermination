@@ -1,5 +1,6 @@
 import { Bird, Cat, Squirrel, Rat, Skull, Shield, AlertTriangle, Bone, ArrowRight, Phone } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { trackCall, trackSectionView } from '../analytics';
 
 const services = [
   {
@@ -80,7 +81,7 @@ const delayClasses = [
 ] as const;
 
 export default function WildlifeServices() {
-  const { ref: headerRef, visible: headerVisible } = useReveal();
+  const { ref: headerRef, visible: headerVisible } = useReveal(() => trackSectionView('wildlife'));
   const { ref: cardsRef, visible: cardsVisible } = useReveal();
   const { ref: bridgeRef, visible: bridgeVisible } = useReveal();
 
@@ -147,6 +148,7 @@ export default function WildlifeServices() {
 
                   <a
                     href="tel:9728046456"
+                    onClick={() => trackCall('wildlife_card', 'wildlife', service.title)}
                     className="service-card-link inline-flex items-center gap-1.5 text-brand-400 font-semibold text-sm mt-6"
                   >
                     Call Steven Now
@@ -171,6 +173,7 @@ export default function WildlifeServices() {
           </p>
           <a
             href="tel:9728046456"
+            onClick={() => trackCall('wildlife_bridge_cta', 'wildlife')}
             className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 min-h-[52px] btn-luxury-glow"
           >
             <Phone className="w-4 h-4" />

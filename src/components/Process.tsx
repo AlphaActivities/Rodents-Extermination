@@ -1,5 +1,6 @@
 import { Search, FileText, Hammer, CheckCircle } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { trackCall, trackNavClick, trackSectionView } from '../analytics';
 
 const steps = [
   {
@@ -31,7 +32,7 @@ const steps = [
 const delayClasses = ['', 'reveal-delay-1', 'reveal-delay-2', 'reveal-delay-3'] as const;
 
 export default function Process() {
-  const { ref: headerRef, visible: headerVisible } = useReveal();
+  const { ref: headerRef, visible: headerVisible } = useReveal(() => trackSectionView('process'));
   const { ref: stepsRef, visible: stepsVisible } = useReveal();
   const { ref: ctaRef, visible: ctaVisible } = useReveal();
 
@@ -113,6 +114,7 @@ export default function Process() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm sm:max-w-none mx-auto w-full">
             <a
               href="tel:9728046456"
+              onClick={() => trackCall('process_cta', 'process')}
               className="inline-flex items-center justify-center gap-2 bg-white text-brand-600 hover:bg-brand-50 font-bold px-8 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 shadow-lg active:scale-95 w-full sm:w-auto min-h-[52px]"
             >
               <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,6 +124,7 @@ export default function Process() {
             </a>
             <a
               href="#contact"
+              onClick={() => trackNavClick('contact', 'process_cta')}
               className="inline-flex items-center justify-center gap-2 border-2 border-white/40 text-white hover:border-white hover:bg-white/10 font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-95 text-sm w-full sm:w-auto min-h-[52px]"
             >
               Request Free Estimate

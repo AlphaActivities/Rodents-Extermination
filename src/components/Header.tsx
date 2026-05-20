@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
+import { trackCall, trackNavClick, trackMobileMenuOpen, trackMobileMenuClose } from '../analytics';
 
 const navLinks = [
   { label: 'Home', href: '#home' },
@@ -82,6 +83,7 @@ export default function Header() {
               <a
                 key={link.href}
                 href={link.href}
+                onClick={() => trackNavClick(link.label.toLowerCase(), 'header_desktop')}
                 className="nav-link text-sm font-medium text-neutral-700 hover:text-brand-500 px-3.5 py-2 rounded-lg transition-colors duration-150 min-h-[44px] flex items-center"
               >
                 {link.label}
@@ -93,6 +95,7 @@ export default function Header() {
           <div className="hidden lg:flex items-center gap-3">
             <a
               href="tel:9728046456"
+              onClick={() => trackCall('header_desktop_cta', 'header')}
               className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 min-h-[44px] btn-luxury-glow"
             >
               <Phone className="w-4 h-4" />
@@ -104,6 +107,7 @@ export default function Header() {
           <div className="lg:hidden flex items-center gap-2">
             <a
               href="tel:9728046456"
+              onClick={() => trackCall('header_mobile_cta', 'header')}
               className="inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white font-semibold px-3.5 py-2 rounded-xl text-sm transition-all duration-200 active:scale-95 min-h-[44px]"
               aria-label="Call now"
             >
@@ -112,7 +116,11 @@ export default function Header() {
             </a>
             <button
               className="p-2.5 rounded-xl text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={() => {
+                if (!menuOpen) trackMobileMenuOpen();
+                else trackMobileMenuClose();
+                setMenuOpen(!menuOpen);
+              }}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen}
             >
@@ -133,7 +141,7 @@ export default function Header() {
             <a
               key={link.href}
               href={link.href}
-              onClick={() => setMenuOpen(false)}
+              onClick={() => { setMenuOpen(false); trackNavClick(link.label.toLowerCase(), 'header_mobile'); }}
               className="flex items-center gap-3 text-base font-medium text-neutral-700 hover:text-brand-500 hover:bg-neutral-50 px-4 py-3.5 rounded-xl transition-colors min-h-[52px]"
             >
               <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" aria-hidden="true" />
@@ -144,7 +152,7 @@ export default function Header() {
         <div className="px-4 pb-5 pt-1 border-t border-neutral-100">
           <a
             href="tel:9728046456"
-            onClick={() => setMenuOpen(false)}
+            onClick={() => { setMenuOpen(false); trackCall('mobile_menu_cta', 'header'); }}
             className="flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold px-5 py-4 rounded-xl text-base transition-all duration-200 w-full min-h-[52px]"
           >
             <Phone className="w-5 h-5" />
@@ -152,7 +160,7 @@ export default function Header() {
           </a>
           <a
             href="#contact"
-            onClick={() => setMenuOpen(false)}
+            onClick={() => { setMenuOpen(false); trackNavClick('contact', 'mobile_menu'); }}
             className="flex items-center justify-center gap-2 mt-3 border-2 border-brand-500 text-brand-500 font-semibold px-5 py-3.5 rounded-xl text-sm transition-all duration-200 w-full min-h-[52px]"
           >
             Request Free Estimate

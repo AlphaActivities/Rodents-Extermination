@@ -1,6 +1,15 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Phone, Mail, MapPin, Send, CheckCircle } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import {
+  trackCall,
+  trackFormEngaged,
+  trackServiceSelected,
+  trackFormSubmit,
+  trackFormSuccess,
+  trackSubmitAnother,
+  trackSectionView,
+} from '../analytics';
 
 const services = [
   'Blown-In Insulation',
@@ -22,17 +31,34 @@ export default function Contact() {
     service: '',
     message: '',
   });
+  const hasEngagedRef = useRef(false);
 
-  const { ref: headerRef, visible: headerVisible } = useReveal();
+  const { ref: headerRef, visible: headerVisible } = useReveal(() => trackSectionView('contact'));
   const { ref: contactColRef, visible: contactColVisible } = useReveal();
   const { ref: formColRef, visible: formColVisible } = useReveal();
 
+  // Fire viewed_form_success when success state renders
+  useEffect(() => {
+    if (submitted) trackFormSuccess();
+  }, [submitted]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (e.target.name === 'service' && e.target.value !== '') {
+      trackServiceSelected(e.target.value);
+    }
+  };
+
+  const handleFocus = () => {
+    if (!hasEngagedRef.current) {
+      hasEngagedRef.current = true;
+      trackFormEngaged();
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    trackFormSubmit(form.service, form.message.length > 0);
     setSubmitted(true);
   };
 
@@ -78,6 +104,7 @@ export default function Contact() {
               <p className="text-blue-100/60 text-xs mb-5 sm:mb-6">Free estimates for residential and commercial attic work.</p>
               <a
                 href="tel:9728046456"
+                onClick={() => trackCall('contact_call_card', 'contact')}
                 className="flex items-center justify-center gap-2 bg-white text-brand-600 hover:bg-brand-50 font-bold px-5 py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 shadow-sm text-sm w-full min-h-[52px]"
               >
                 <Phone className="w-4 h-4" />
@@ -133,7 +160,9 @@ export default function Contact() {
                   <button
                     className="mt-6 text-brand-500 hover:text-brand-600 text-sm font-medium transition-colors min-h-[44px] px-4"
                     onClick={() => {
+                      trackSubmitAnother();
                       setSubmitted(false);
+                      hasEngagedRef.current = false;
                       setForm({ name: '', phone: '', email: '', service: '', message: '' });
                     }}
                   >
@@ -155,6 +184,7 @@ export default function Contact() {
                         aria-required="true"
                         value={form.name}
                         onChange={handleChange}
+                        onFocus={handleFocus}
                         placeholder="Your full name"
                         className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
                       />
@@ -171,6 +201,7 @@ export default function Contact() {
                         aria-required="true"
                         value={form.phone}
                         onChange={handleChange}
+                        onFocus={handleFocus}
                         placeholder="(555) 000-0000"
                         className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
                       />
@@ -187,6 +218,7 @@ export default function Contact() {
                       type="email"
                       value={form.email}
                       onChange={handleChange}
+                      onFocus={handleFocus}
                       placeholder="your@email.com"
                       className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
                     />
@@ -203,6 +235,7 @@ export default function Contact() {
                       aria-required="true"
                       value={form.service}
                       onChange={handleChange}
+                      onFocus={handleFocus}
                       className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
                     >
                       <option value="">Select a service...</option>
@@ -222,6 +255,7 @@ export default function Contact() {
                       rows={4}
                       value={form.message}
                       onChange={handleChange}
+                      onFocus={handleFocus}
                       placeholder="Describe your situation or any questions you have about your attic..."
                       className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition resize-none bg-neutral-50 hover:bg-white"
                     />

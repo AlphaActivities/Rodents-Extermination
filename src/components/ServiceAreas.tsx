@@ -1,5 +1,6 @@
 import { MapPin, Phone } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { trackCall, trackSectionView } from '../analytics';
 
 const cities = [
   'Fort Worth',
@@ -17,7 +18,7 @@ const cities = [
 ];
 
 export default function ServiceAreas() {
-  const { ref: headingRef, visible: headingVisible } = useReveal();
+  const { ref: headingRef, visible: headingVisible } = useReveal(() => trackSectionView('service_areas'));
   const { ref: chipsRef, visible: chipsVisible } = useReveal();
   const { ref: mapRef, visible: mapVisible } = useReveal();
 
@@ -69,6 +70,7 @@ export default function ServiceAreas() {
 
             <a
               href="tel:9728046456"
+              onClick={() => trackCall('service_areas_confirm', 'service_areas')}
               className={`inline-flex items-center gap-2 text-brand-500 hover:text-brand-600 font-semibold text-sm transition-colors min-h-[44px] reveal ${chipsVisible ? 'reveal-visible' : ''}`}
             >
               <Phone className="w-4 h-4 flex-shrink-0" />
