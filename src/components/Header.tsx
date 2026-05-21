@@ -16,7 +16,6 @@ const navLinks = [
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const skipScrollRestoreRef = useRef(false);
   const smoothScrollToTopRef = useRef(false);
 
   useEffect(() => {
@@ -37,26 +36,16 @@ export default function Header() {
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.width = '';
-      if (skipScrollRestoreRef.current) {
-        skipScrollRestoreRef.current = false;
-        if (smoothScrollToTopRef.current) {
-          smoothScrollToTopRef.current = false;
-          // Body is now unfrozen — trigger the smooth scroll
-          requestAnimationFrame(() => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          });
-        }
+      if (smoothScrollToTopRef.current) {
+        smoothScrollToTopRef.current = false;
+        // Body unfrozen — now smooth scroll to top
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
       } else {
         window.scrollTo(0, -savedScrollY);
       }
     }
-    return () => {
-      const savedScrollY = parseInt(document.body.style.top || '0', 10);
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      if (savedScrollY && !skipScrollRestoreRef.current) window.scrollTo(0, -savedScrollY);
-    };
   }, [menuOpen]);
 
   // Close menu on resize to desktop
@@ -157,7 +146,6 @@ export default function Header() {
               onClick={(e) => {
                 if (link.href === '#home') {
                   e.preventDefault();
-                  skipScrollRestoreRef.current = true;
                   smoothScrollToTopRef.current = true;
                 }
                 setMenuOpen(false);
