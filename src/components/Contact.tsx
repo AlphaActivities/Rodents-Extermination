@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Phone, Mail, MapPin, Send, CheckCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Send, CheckCircle, Loader2 } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
 import {
   trackCall,
@@ -10,6 +10,7 @@ import {
   trackSubmitAnother,
   trackSectionView,
 } from '../analytics';
+import { supabase } from '../lib/supabase';
 
 const services = [
   'Blown-In Insulation',
@@ -24,6 +25,8 @@ const services = [
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -37,13 +40,14 @@ export default function Contact() {
   const { ref: contactColRef, visible: contactColVisible } = useReveal();
   const { ref: formColRef, visible: formColVisible } = useReveal();
 
-  // Fire viewed_form_success when success state renders
+  // Fire viewed_form_success only after successful insert flips submitted to true
   useEffect(() => {
     if (submitted) trackFormSuccess();
   }, [submitted]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (error) setError(null);
     if (e.target.name === 'service' && e.target.value !== '') {
       trackServiceSelected(e.target.value);
     }
@@ -56,10 +60,35 @@ export default function Contact() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const { error: insertError } = await supabase.from('leads').insert([
+      {
+        name: form.name,
+        phone: form.phone,
+        email: form.email || null,
+        service_name: form.service,
+        message: form.message || null,
+        landing_page: window.location.href,
+        page_path: window.location.pathname,
+        referrer: document.referrer || null,
+      },
+    ]);
+
+    if (insertError) {
+      console.error('Supabase lead insert failed:', insertError);
+      setError('Something went wrong. Please try again or call Steven directly at (972) 804-6456.');
+      setLoading(false);
+      return;
+    }
+
+    // Analytics fires only after confirmed DB insert
     trackFormSubmit(form.service, form.message.length > 0);
     setSubmitted(true);
+    setLoading(false);
   };
 
   return (
@@ -261,12 +290,28 @@ export default function Contact() {
                     />
                   </div>
 
+                  {error && (
+                    <p className="text-red-500 text-sm text-center leading-relaxed">
+                      {error}
+                    </p>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full btn-primary justify-center py-4 text-base rounded-xl min-h-[52px]"
+                    disabled={loading}
+                    className="w-full btn-primary justify-center py-4 text-base rounded-xl min-h-[52px] disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    <Send className="w-4 h-4" />
-                    Submit Request For Free Estimate
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Submit Request For Free Estimate
+                      </>
+                    )}
                   </button>
 
                   <p className="text-neutral-600 text-xs text-center pt-1">
