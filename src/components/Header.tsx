@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
 import { trackCall, trackNavClick, trackMobileMenuOpen, trackMobileMenuClose } from '../analytics';
 
@@ -16,6 +16,7 @@ const navLinks = [
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const skipScrollRestoreRef = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
@@ -31,18 +32,23 @@ export default function Header() {
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
     } else {
-      const scrollY = parseInt(document.body.style.top || '0', 10);
+      const savedScrollY = parseInt(document.body.style.top || '0', 10);
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.width = '';
-      window.scrollTo(0, -scrollY);
+      if (skipScrollRestoreRef.current) {
+        skipScrollRestoreRef.current = false;
+        // Let the browser handle smooth scroll to the anchor naturally
+      } else {
+        window.scrollTo(0, -savedScrollY);
+      }
     }
     return () => {
-      const scrollY = parseInt(document.body.style.top || '0', 10);
+      const savedScrollY = parseInt(document.body.style.top || '0', 10);
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.width = '';
-      if (scrollY) window.scrollTo(0, -scrollY);
+      if (savedScrollY && !skipScrollRestoreRef.current) window.scrollTo(0, -savedScrollY);
     };
   }, [menuOpen]);
 
@@ -143,13 +149,7 @@ export default function Header() {
               href={link.href}
               onClick={() => {
                 if (link.href === '#home') {
-                  // Clear fixed positioning without restoring scroll position, then smooth-scroll to top
-                  document.body.style.position = '';
-                  document.body.style.top = '';
-                  document.body.style.width = '';
-                  requestAnimationFrame(() => {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  });
+                  skipScrollRestoreRef.current = true;
                 }
                 setMenuOpen(false);
                 trackNavClick(link.label.toLowerCase(), 'header_mobile');
