@@ -143,11 +143,13 @@ export default function Header() {
               href={link.href}
               onClick={() => {
                 if (link.href === '#home') {
-                  // Release fixed positioning without restoring scroll, then jump to top
+                  // Clear fixed positioning without restoring scroll position, then smooth-scroll to top
                   document.body.style.position = '';
                   document.body.style.top = '';
                   document.body.style.width = '';
-                  window.scrollTo(0, 0);
+                  requestAnimationFrame(() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  });
                 }
                 setMenuOpen(false);
                 trackNavClick(link.label.toLowerCase(), 'header_mobile');
