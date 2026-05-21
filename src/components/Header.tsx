@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
 import { trackCall, trackNavClick, trackMobileMenuOpen, trackMobileMenuClose } from '../analytics';
 
@@ -16,8 +16,6 @@ const navLinks = [
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const smoothScrollToTopRef = useRef(false);
-
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -33,16 +31,11 @@ export default function Header() {
       document.body.style.width = '100%';
     } else {
       const savedScrollY = parseInt(document.body.style.top || '0', 10);
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      if (smoothScrollToTopRef.current) {
-        smoothScrollToTopRef.current = false;
-        // Body unfrozen — now smooth scroll to top
-        requestAnimationFrame(() => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-      } else {
+      // Only restore if styles are still set (Home click handler may have already cleared them)
+      if (document.body.style.position === 'fixed') {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
         window.scrollTo(0, -savedScrollY);
       }
     }
@@ -146,7 +139,12 @@ export default function Header() {
               onClick={(e) => {
                 if (link.href === '#home') {
                   e.preventDefault();
-                  smoothScrollToTopRef.current = true;
+                  // Clear body-lock styles NOW, before React re-renders, so the
+                  // useEffect sees position !== 'fixed' and skips the snap restore.
+                  document.body.style.position = '';
+                  document.body.style.top = '';
+                  document.body.style.width = '';
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
                 setMenuOpen(false);
                 trackNavClick(link.label.toLowerCase(), 'header_mobile');
