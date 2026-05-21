@@ -70,6 +70,7 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    (document.activeElement as HTMLElement)?.blur();
     setLoading(true);
     setError(null);
 
@@ -223,7 +224,7 @@ export default function Contact() {
                         onChange={handleChange}
                         onFocus={handleFocus}
                         placeholder="Your full name"
-                        className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
+                        className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-base sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
                       />
                     </div>
                     <div>
@@ -240,7 +241,7 @@ export default function Contact() {
                         onChange={handleChange}
                         onFocus={handleFocus}
                         placeholder="(555) 000-0000"
-                        className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
+                        className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-base sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
                       />
                     </div>
                   </div>
@@ -257,7 +258,7 @@ export default function Contact() {
                       onChange={handleChange}
                       onFocus={handleFocus}
                       placeholder="your@email.com"
-                      className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
+                      className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-base sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
                     />
                   </div>
 
@@ -273,7 +274,7 @@ export default function Contact() {
                       value={form.service}
                       onChange={handleChange}
                       onFocus={handleFocus}
-                      className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
+                      className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-base sm:text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
                     >
                       <option value="">Select a service...</option>
                       {services.map((s) => (
@@ -294,7 +295,7 @@ export default function Contact() {
                       onChange={handleChange}
                       onFocus={handleFocus}
                       placeholder="Describe your situation or any questions you have about your attic..."
-                      className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition resize-none bg-neutral-50 hover:bg-white"
+                      className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-base sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition resize-none bg-neutral-50 hover:bg-white"
                     />
                   </div>
 
