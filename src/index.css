@@ -4,6 +4,241 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Admin Dashboard Token System ────────────────────────────
+   Scoped entirely to [data-app="admin"].
+   Zero bleed into the public marketing site.
+──────────────────────────────────────────────────────────── */
+[data-app="admin"] {
+  /* Surfaces */
+  --db-bg:          #0c0e14;
+  --db-sidebar:     #0f1118;
+  --db-topbar:      #0f1118;
+  --db-surface:     #13151e;
+  --db-elevated:    #1a1d29;
+  --db-hover:       #1f2235;
+  --db-overlay:     rgba(0, 0, 0, 0.65);
+
+  /* Borders */
+  --db-border:      rgba(255, 255, 255, 0.07);
+  --db-border-hi:   rgba(255, 255, 255, 0.13);
+
+  /* Text */
+  --db-text-1:      #f0f2f7;
+  --db-text-2:      #8b92a9;
+  --db-text-3:      #4a5068;
+
+  /* Accent — blue */
+  --db-accent:      #2563eb;
+  --db-accent-soft: rgba(37, 99, 235, 0.18);
+  --db-accent-text: #60a5fa;
+
+  /* Status */
+  --db-success:     #10b981;
+  --db-warning:     #f59e0b;
+  --db-error:       #ef4444;
+
+  /* Shadows */
+  --db-shadow-card:    0 1px 3px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35);
+  --db-shadow-elevated: 0 4px 16px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.4);
+}
+
+/* ── Admin component classes ─────────────────────────────────
+   All scoped — no global leakage.
+──────────────────────────────────────────────────────────── */
+
+/* Override public-site global tap-target rule inside admin scope */
+[data-app="admin"] a,
+[data-app="admin"] button {
+  min-height: unset;
+}
+
+/* Base card */
+[data-app="admin"] .db-card {
+  background: var(--db-surface);
+  border: 1px solid var(--db-border);
+  border-radius: 0.875rem;
+  box-shadow: var(--db-shadow-card);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+[data-app="admin"] .db-card:hover {
+  border-color: var(--db-border-hi);
+  box-shadow: var(--db-shadow-elevated);
+}
+
+/* Sidebar nav item — default */
+[data-app="admin"] .db-sidebar-item {
+  color: var(--db-text-2);
+}
+
+[data-app="admin"] .db-sidebar-item:hover {
+  color: var(--db-text-1);
+  background: var(--db-hover);
+}
+
+/* Sidebar nav item — active */
+[data-app="admin"] .db-sidebar-active {
+  color: var(--db-accent-text);
+  background: var(--db-accent-soft);
+}
+
+[data-app="admin"] .db-sidebar-active:hover {
+  background: var(--db-accent-soft);
+}
+
+/* Icon button (topbar) */
+[data-app="admin"] .db-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  color: var(--db-text-2);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+[data-app="admin"] .db-icon-btn:hover {
+  color: var(--db-text-1);
+  background: var(--db-hover);
+}
+
+/* Ghost button (sign out, etc.) */
+[data-app="admin"] .db-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  color: var(--db-text-2);
+  border: 1px solid var(--db-border);
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+[data-app="admin"] .db-btn-ghost:hover {
+  color: var(--db-text-1);
+  background: var(--db-hover);
+  border-color: var(--db-border-hi);
+}
+
+/* Primary button */
+[data-app="admin"] .db-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: var(--db-accent);
+  color: #ffffff;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+[data-app="admin"] .db-btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+[data-app="admin"] .db-btn-primary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+[data-app="admin"] .db-btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Text input */
+[data-app="admin"] .db-input {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  background: var(--db-elevated);
+  color: var(--db-text-1);
+  border: 1px solid var(--db-border);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  caret-color: var(--db-accent-text);
+}
+
+[data-app="admin"] .db-input::placeholder {
+  color: var(--db-text-3);
+}
+
+[data-app="admin"] .db-input:focus {
+  border-color: var(--db-accent);
+  box-shadow: 0 0 0 3px var(--db-accent-soft);
+}
+
+/* Badge */
+[data-app="admin"] .db-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: var(--db-accent-soft);
+  color: var(--db-accent-text);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+}
+
+/* Action button — primary (call) */
+[data-app="admin"] .db-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: var(--db-accent-soft);
+  color: var(--db-accent-text);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  transition: background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+[data-app="admin"] .db-action-btn:hover {
+  background: rgba(37, 99, 235, 0.28);
+  border-color: rgba(37, 99, 235, 0.38);
+}
+
+/* Action button — secondary (email) */
+[data-app="admin"] .db-action-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--db-text-2);
+  border: 1px solid var(--db-border);
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  overflow: hidden;
+}
+
+[data-app="admin"] .db-action-btn-secondary:hover {
+  color: var(--db-text-1);
+  background: var(--db-hover);
+  border-color: var(--db-border-hi);
+}
+
+/* Expand toggle button */
+[data-app="admin"] .db-expand-btn {
+  color: var(--db-text-3);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+[data-app="admin"] .db-expand-btn:hover {
+  color: var(--db-text-2);
+  background: var(--db-hover);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;

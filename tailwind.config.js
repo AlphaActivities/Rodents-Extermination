@@ -28,6 +28,26 @@ export default {
           800: '#1f2937',
           900: '#111827',
         },
+        // Admin dashboard tokens — reference CSS variables set by [data-app="admin"]
+        db: {
+          bg:         'var(--db-bg)',
+          sidebar:    'var(--db-sidebar)',
+          topbar:     'var(--db-topbar)',
+          surface:    'var(--db-surface)',
+          elevated:   'var(--db-elevated)',
+          hover:      'var(--db-hover)',
+          border:     'var(--db-border)',
+          'border-hi':'var(--db-border-hi)',
+          text1:      'var(--db-text-1)',
+          text2:      'var(--db-text-2)',
+          text3:      'var(--db-text-3)',
+          accent:     'var(--db-accent)',
+          'accent-soft': 'var(--db-accent-soft)',
+          'accent-text': 'var(--db-accent-text)',
+          success:    'var(--db-success)',
+          warning:    'var(--db-warning)',
+          error:      'var(--db-error)',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -35,6 +55,9 @@ export default {
       spacing: {
         18: '4.5rem',
         22: '5.5rem',
+      },
+      transitionDuration: {
+        250: '250ms',
       },
     },
   },
