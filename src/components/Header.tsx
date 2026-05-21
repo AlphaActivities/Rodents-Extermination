@@ -17,6 +17,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const skipScrollRestoreRef = useRef(false);
+  const smoothScrollToTopRef = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
@@ -38,7 +39,13 @@ export default function Header() {
       document.body.style.width = '';
       if (skipScrollRestoreRef.current) {
         skipScrollRestoreRef.current = false;
-        // Let the browser handle smooth scroll to the anchor naturally
+        if (smoothScrollToTopRef.current) {
+          smoothScrollToTopRef.current = false;
+          // Body is now unfrozen — trigger the smooth scroll
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+        }
       } else {
         window.scrollTo(0, -savedScrollY);
       }
@@ -147,9 +154,11 @@ export default function Header() {
             <a
               key={link.href}
               href={link.href}
-              onClick={() => {
+              onClick={(e) => {
                 if (link.href === '#home') {
+                  e.preventDefault();
                   skipScrollRestoreRef.current = true;
+                  smoothScrollToTopRef.current = true;
                 }
                 setMenuOpen(false);
                 trackNavClick(link.label.toLowerCase(), 'header_mobile');
