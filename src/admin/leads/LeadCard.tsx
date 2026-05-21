@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Phone, Mail, Wrench, MessageSquare, Globe, Clock } from 'lucide-react';
+import { Phone, Mail, Clock } from 'lucide-react';
 
 export interface Lead {
   id: number;
@@ -38,29 +37,23 @@ function timeAgo(iso: string): string {
 
 function UrgencyPip({ createdAt }: { createdAt: string }) {
   const hrs = (Date.now() - new Date(createdAt).getTime()) / 3600000;
-  if (hrs > 24) {
-    return (
-      <span
-        className="shrink-0 inline-block w-2 h-2 rounded-full"
-        style={{ background: 'var(--db-error)' }}
-        title="No contact in 24+ hours"
-      />
-    );
-  }
-  if (hrs > 4) {
-    return (
-      <span
-        className="shrink-0 inline-block w-2 h-2 rounded-full"
-        style={{ background: 'var(--db-warning)' }}
-        title="No contact in 4+ hours"
-      />
-    );
-  }
+  const color =
+    hrs > 24
+      ? 'var(--db-error)'
+      : hrs > 4
+      ? 'var(--db-warning)'
+      : 'var(--db-success)';
+  const title =
+    hrs > 24
+      ? 'No contact in 24+ hours'
+      : hrs > 4
+      ? 'No contact in 4+ hours'
+      : 'Recent lead';
   return (
     <span
       className="shrink-0 inline-block w-2 h-2 rounded-full"
-      style={{ background: 'var(--db-success)' }}
-      title="Recent lead"
+      style={{ background: color }}
+      title={title}
     />
   );
 }
@@ -68,39 +61,42 @@ function UrgencyPip({ createdAt }: { createdAt: string }) {
 interface Props {
   lead: Lead;
   index: number;
+  onClick: (lead: Lead) => void;
 }
 
-export default function LeadCard({ lead, index }: Props) {
-  const [expanded, setExpanded] = useState(false);
-
-  const hasSourceDetails =
-    !!(lead.service_name || lead.message || lead.landing_page || lead.referrer);
-
+export default function LeadCard({ lead, index, onClick }: Props) {
   return (
     <article
-      className="db-card overflow-hidden"
+      className="db-card db-lead-card overflow-hidden cursor-pointer"
       style={{
         animationDelay: `${index * 40}ms`,
         animationFillMode: 'backwards',
       }}
+      onClick={() => onClick(lead)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick(lead);
+        }
+      }}
+      aria-label={`View details for ${lead.name}`}
     >
-      {/* ── Card body ─────────────────────────────────────── */}
       <div className="p-4 sm:p-5">
 
-        {/* Row 1: name + badge + urgency */}
-        <div className="flex items-start justify-between gap-3 mb-2.5">
-          <div className="flex items-center gap-2 flex-wrap min-w-0">
-            <UrgencyPip createdAt={lead.created_at} />
-            <span
-              className="font-semibold text-sm leading-tight truncate"
-              style={{ color: 'var(--db-text-1)' }}
-            >
-              {lead.name}
-            </span>
-            {lead.service_name && (
-              <span className="db-badge shrink-0">{lead.service_name}</span>
-            )}
-          </div>
+        {/* Row 1: urgency pip + name + service badge */}
+        <div className="flex items-center gap-2 flex-wrap min-w-0 mb-2.5">
+          <UrgencyPip createdAt={lead.created_at} />
+          <span
+            className="font-semibold text-sm leading-tight truncate"
+            style={{ color: 'var(--db-text-1)' }}
+          >
+            {lead.name}
+          </span>
+          {lead.service_name && (
+            <span className="db-badge shrink-0">{lead.service_name}</span>
+          )}
         </div>
 
         {/* Row 2: timestamp */}
@@ -121,11 +117,12 @@ export default function LeadCard({ lead, index }: Props) {
           </span>
         </div>
 
-        {/* Row 3: contact actions */}
-        <div className="flex flex-wrap gap-2 mb-3">
+        {/* Row 3: contact buttons — stop propagation so clicks go to tel/mailto not drawer */}
+        <div className="flex flex-wrap gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
           <a
             href={`tel:${lead.phone.replace(/\D/g, '')}`}
             className="db-action-btn"
+            aria-label={`Call ${lead.name}`}
           >
             <Phone className="w-3.5 h-3.5 shrink-0" />
             <span>{lead.phone}</span>
@@ -134,6 +131,7 @@ export default function LeadCard({ lead, index }: Props) {
             <a
               href={`mailto:${lead.email}`}
               className="db-action-btn-secondary"
+              aria-label={`Email ${lead.name}`}
             >
               <Mail className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate max-w-[200px]">{lead.email}</span>
@@ -150,107 +148,15 @@ export default function LeadCard({ lead, index }: Props) {
             {lead.message}
           </p>
         )}
-      </div>
 
-      {/* ── Source details toggle ──────────────────────────── */}
-      {hasSourceDetails && (
-        <div style={{ borderTop: '1px solid var(--db-border)' }}>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="db-expand-btn w-full flex items-center justify-between px-4 sm:px-5 py-2.5 text-xs font-medium"
-          >
-            <span>Source details</span>
-            <svg
-              className="w-3.5 h-3.5 transition-transform duration-200"
-              style={{
-                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                color: 'var(--db-text-3)',
-              }}
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-
-          {expanded && (
-            <div
-              className="px-4 sm:px-5 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-3"
-              style={{
-                background: 'var(--db-bg)',
-                borderTop: '1px solid var(--db-border)',
-              }}
-            >
-              {lead.service_name && (
-                <SourceRow icon={Wrench} label="Service" value={lead.service_name} />
-              )}
-              {lead.message && (
-                <SourceRow
-                  icon={MessageSquare}
-                  label="Full message"
-                  value={lead.message}
-                  wide
-                />
-              )}
-              {lead.landing_page && (
-                <SourceRow
-                  icon={Globe}
-                  label="Landing page"
-                  value={lead.landing_page}
-                  wide
-                  breakAll
-                />
-              )}
-              {lead.referrer && (
-                <SourceRow
-                  icon={Globe}
-                  label="Referrer"
-                  value={lead.referrer}
-                  wide
-                  breakAll
-                />
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </article>
-  );
-}
-
-interface SourceRowProps {
-  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
-  label: string;
-  value: string;
-  wide?: boolean;
-  breakAll?: boolean;
-}
-
-function SourceRow({ icon: Icon, label, value, wide, breakAll }: SourceRowProps) {
-  return (
-    <div className={['flex items-start gap-2 pt-3', wide ? 'sm:col-span-2' : ''].join(' ')}>
-      <Icon
-        className="w-3.5 h-3.5 mt-0.5 shrink-0"
-        style={{ color: 'var(--db-text-3)' }}
-      />
-      <div className="min-w-0">
+        {/* "View details" hint */}
         <div
-          className="text-xs font-semibold mb-0.5"
-          style={{ color: 'var(--db-text-2)' }}
-        >
-          {label}
-        </div>
-        <div
-          className={['text-xs leading-relaxed', breakAll ? 'break-all' : ''].join(' ')}
+          className="mt-3 text-xs font-medium"
           style={{ color: 'var(--db-text-3)' }}
         >
-          {value}
+          Click to view details →
         </div>
       </div>
-    </div>
+    </article>
   );
 }
