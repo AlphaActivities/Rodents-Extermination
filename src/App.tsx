@@ -25,19 +25,9 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Lock scroll while loading screen is visible or animating out.
-  // Exit animation: 280ms delay + 550ms travel = 830ms total.
-  // The class is also added immediately in index.html before React loads.
   useEffect(() => {
-    if (loading) {
-      document.documentElement.classList.add('scroll-locked');
-      return;
-    }
-    const unlock = setTimeout(() => {
-      document.documentElement.classList.remove('scroll-locked');
-    }, 850);
-    return () => clearTimeout(unlock);
-  }, [loading]);
+    document.documentElement.classList.remove('scroll-locked');
+  }, []);
 
   useEffect(() => {
     const cleanup = initScrollTracking();
