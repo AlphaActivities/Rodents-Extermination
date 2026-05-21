@@ -255,6 +255,59 @@
   animation: db-card-in 0.25s ease both;
 }
 
+/* ── Stat cards ──────────────────────────────────────────── */
+[data-app="admin"] .db-stat-cards-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  [data-app="admin"] .db-stat-cards-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+[data-app="admin"] .db-stat-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1rem 1.125rem 1rem;
+  border-radius: 0.875rem;
+  background: var(--db-surface);
+  border: 1px solid var(--db-border);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, transform 0.15s ease;
+  overflow: hidden;
+  outline: none;
+}
+
+[data-app="admin"] .db-stat-card:hover {
+  background: var(--db-elevated);
+  border-color: var(--db-border-hi);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
+}
+
+[data-app="admin"] .db-stat-card:focus-visible {
+  box-shadow: 0 0 0 2px var(--db-accent);
+}
+
+[data-app="admin"] .db-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: var(--db-elevated);
+  color: var(--db-text-3);
+  transition: background 0.18s ease, color 0.18s ease;
+  flex-shrink: 0;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
