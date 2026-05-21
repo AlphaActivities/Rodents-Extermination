@@ -45,8 +45,16 @@ export default function Contact() {
     if (submitted) trackFormSuccess();
   }, [submitted]);
 
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 10);
+    if (digits.length <= 3) return digits.length ? `(${digits}` : '';
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const value = e.target.name === 'phone' ? formatPhone(e.target.value) : e.target.value;
+    setForm({ ...form, [e.target.name]: value });
     if (error) setError(null);
     if (e.target.name === 'service' && e.target.value !== '') {
       trackServiceSelected(e.target.value);
