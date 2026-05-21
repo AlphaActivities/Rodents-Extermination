@@ -19,12 +19,24 @@ import LoadingScreen from './components/LoadingScreen';
 
 function App() {
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     window.scrollTo(0, 0);
     const timer = setTimeout(() => setLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
+
+  // Lock scroll while loading screen is visible or animating out.
+  // Exit animation: 280ms delay + 550ms travel = 830ms total.
+  useEffect(() => {
+    if (loading) {
+      document.body.style.overflow = 'hidden';
+      return;
+    }
+    const unlock = setTimeout(() => {
+      document.body.style.overflow = '';
+    }, 850);
+    return () => clearTimeout(unlock);
+  }, [loading]);
 
   useEffect(() => {
     const cleanup = initScrollTracking();
