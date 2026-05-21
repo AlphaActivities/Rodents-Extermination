@@ -22,23 +22,20 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
+  // Lock body scroll when mobile menu is open — use overflow:hidden on html
+  // so window.scrollY stays readable and scrollTo works correctly
   useEffect(() => {
     if (menuOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
+      document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.touchAction = 'none';
     } else {
-      const savedScrollY = parseInt(document.body.style.top || '0', 10);
-      // Only restore if styles are still set (Home click handler may have already cleared them)
-      if (document.body.style.position === 'fixed') {
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        window.scrollTo(0, -savedScrollY);
-      }
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.touchAction = '';
     }
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.touchAction = '';
+    };
   }, [menuOpen]);
 
   // Close menu on resize to desktop
@@ -139,12 +136,10 @@ export default function Header() {
               onClick={(e) => {
                 if (link.href === '#home') {
                   e.preventDefault();
-                  // Clear body-lock styles NOW, before React re-renders, so the
-                  // useEffect sees position !== 'fixed' and skips the snap restore.
-                  document.body.style.position = '';
-                  document.body.style.top = '';
-                  document.body.style.width = '';
+                  setMenuOpen(false);
+                  trackNavClick(link.label.toLowerCase(), 'header_mobile');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
+                  return;
                 }
                 setMenuOpen(false);
                 trackNavClick(link.label.toLowerCase(), 'header_mobile');
