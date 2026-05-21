@@ -80,27 +80,46 @@ export default function Contact() {
     setLoading(true);
     setError(null);
 
-    const { error: insertError } = await supabase.from('leads').insert([
-      {
-        name: form.name,
-        phone: form.phone,
-        email: form.email || null,
-        service_name: form.service,
-        message: form.message || null,
-        landing_page: window.location.href,
-        page_path: window.location.pathname,
-        referrer: document.referrer || null,
-      },
+    const payload = {
+      name: form.name,
+      phone: form.phone,
+      email: form.email || null,
+      service_name: form.service,
+      message: form.message || null,
+      landing_page: window.location.href,
+      page_path: window.location.pathname,
+      referrer: document.referrer || null,
+    };
+
+    // POST to Netlify Forms and Supabase in parallel
+    const netlifyBody = new URLSearchParams({
+      'form-name': 'contact',
+      name: payload.name,
+      phone: payload.phone,
+      email: payload.email ?? '',
+      service_name: payload.service_name ?? '',
+      message: payload.message ?? '',
+      landing_page: payload.landing_page,
+      page_path: payload.page_path,
+      referrer: payload.referrer ?? '',
+    });
+
+    const [netlifyRes, supabaseResult] = await Promise.all([
+      fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: netlifyBody.toString(),
+      }),
+      supabase.from('leads').insert([payload]),
     ]);
 
-    if (insertError) {
-      console.error('Supabase lead insert failed:', insertError);
+    // Succeed if at least one channel captured the lead
+    if (!netlifyRes.ok && supabaseResult.error) {
       setError('Something went wrong. Please try again or call Steven directly at (972) 804-6456.');
       setLoading(false);
       return;
     }
 
-    // Analytics fires only after confirmed DB insert
     trackFormSubmit(form.service, form.message.length > 0);
     setSubmitted(true);
     setLoading(false);
