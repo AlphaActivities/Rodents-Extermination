@@ -35,14 +35,20 @@ export default function Contact() {
     message: '',
   });
   const hasEngagedRef = useRef(false);
+  const successRef = useRef<HTMLDivElement>(null);
 
   const { ref: headerRef, visible: headerVisible } = useReveal(() => trackSectionView('contact'));
   const { ref: contactColRef, visible: contactColVisible } = useReveal();
   const { ref: formColRef, visible: formColVisible } = useReveal();
 
-  // Fire viewed_form_success only after successful insert flips submitted to true
+  // Fire viewed_form_success and scroll to success state on mobile
   useEffect(() => {
-    if (submitted) trackFormSuccess();
+    if (submitted) {
+      trackFormSuccess();
+      setTimeout(() => {
+        successRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
   }, [submitted]);
 
   const formatPhone = (value: string) => {
@@ -187,7 +193,7 @@ export default function Contact() {
                 </div>
               )}
               {submitted ? (
-                <div className="flex flex-col items-center justify-center py-12 sm:py-14 text-center form-success-enter">
+                <div ref={successRef} className="flex flex-col items-center justify-center py-12 sm:py-14 text-center form-success-enter">
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-5">
                     <CheckCircle className="w-8 h-8 text-green-500" />
                   </div>
