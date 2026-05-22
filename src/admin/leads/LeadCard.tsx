@@ -114,9 +114,10 @@ export default function LeadCard({ lead, index, onClick }: Props) {
         </div>
 
         {/* Row 3: contact quick actions — stopPropagation so clicking tel/sms/mailto
-            does not open the drawer */}
+            does not open the drawer. w-fit ensures dead-space to the right still
+            reaches the article's onClick and opens the drawer. */}
         <div
-          className="flex flex-wrap gap-2 mb-3"
+          className="flex flex-wrap gap-2 mb-3 w-fit"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Call — primary, most prominent */}
@@ -160,13 +161,19 @@ export default function LeadCard({ lead, index, onClick }: Props) {
           </p>
         )}
 
-        {/* View hint */}
-        <div
-          className="mt-3 text-xs font-medium"
-          style={{ color: 'var(--db-text-3)' }}
-        >
-          Click to view details →
-        </div>
+      </div>
+
+      {/* View details strip — full-width bottom bar so it's obvious and tappable */}
+      <div
+        className="flex items-center justify-between px-4 sm:px-5 py-2.5 text-xs font-semibold"
+        style={{
+          borderTop: '1px solid var(--db-border)',
+          color: 'var(--db-accent-text)',
+          background: 'var(--db-accent-soft)',
+        }}
+      >
+        <span>View details</span>
+        <span aria-hidden="true" style={{ fontSize: '0.85rem' }}>→</span>
       </div>
     </article>
   );
