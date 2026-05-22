@@ -679,6 +679,12 @@
   border-radius: 0.75rem;
   padding: 0.875rem 1rem;
   width: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+[data-app="admin"] .db-note-editor:focus-within {
+  border-color: var(--db-accent);
+  box-shadow: 0 0 0 3px var(--db-accent-soft);
 }
 
 [data-app="admin"] .db-note-textarea {
@@ -695,6 +701,12 @@
   border: none;
   caret-color: var(--db-accent-text);
   font-family: inherit;
+}
+
+[data-app="admin"] .db-note-textarea:focus,
+[data-app="admin"] .db-note-textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 [data-app="admin"] .db-note-textarea::placeholder {
