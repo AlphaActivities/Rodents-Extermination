@@ -105,34 +105,38 @@ export default function Contact() {
 
     const edgeFnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-lead`;
 
-    const [netlifyRes, edgeRes] = await Promise.all([
-      fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: netlifyBody.toString(),
-      }),
-      fetch(edgeFnUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify(payload),
-      }),
-    ]);
+    try {
+      const [netlifyRes, edgeRes] = await Promise.all([
+        fetch('/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: netlifyBody.toString(),
+        }),
+        fetch(edgeFnUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify(payload),
+        }),
+      ]);
 
-    if (!edgeRes.ok) {
-      setError('Something went wrong. Please try again or call Steven directly at (972) 804-6456.');
+      void netlifyRes;
+
+      if (!edgeRes.ok) {
+        setError('Something went wrong while submitting your request. Please try again or call us directly at (972) 804-6456.');
+        return;
+      }
+
+      trackFormSubmit(form.service, form.message.length > 0);
+      setSubmitted(true);
+    } catch {
+      setError('Something went wrong while submitting your request. Please try again or call us directly at (972) 804-6456.');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    void netlifyRes;
-
-    trackFormSubmit(form.service, form.message.length > 0);
-    setSubmitted(true);
-    setLoading(false);
   };
 
   return (
