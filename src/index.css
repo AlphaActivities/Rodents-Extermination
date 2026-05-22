@@ -684,6 +684,8 @@
 [data-app="admin"] .db-note-textarea {
   display: block;
   width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
   background: transparent;
   color: var(--db-text-1);
   font-size: 0.875rem;
