@@ -20,6 +20,7 @@ export interface Lead {
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString('en-US', {
+    timeZone: 'America/Chicago',
     month: 'short',
     day: 'numeric',
     year: 'numeric',

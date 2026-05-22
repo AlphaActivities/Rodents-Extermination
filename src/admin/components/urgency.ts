@@ -7,8 +7,15 @@ export interface UrgencyInfo {
   show: boolean;
 }
 
+function fmtElapsed(hrs: number): string {
+  const h = Math.floor(hrs);
+  const m = Math.floor((hrs - h) * 60);
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
 export function getUrgency(lead: Lead): UrgencyInfo {
-  // Only show urgency for leads that haven't been contacted yet
   if (lead.status !== 'new') {
     return {
       label: '',
@@ -19,10 +26,11 @@ export function getUrgency(lead: Lead): UrgencyInfo {
   }
 
   const hrs = (Date.now() - new Date(lead.created_at).getTime()) / 3600000;
+  const elapsed = fmtElapsed(hrs);
 
   if (hrs > 24) {
     return {
-      label: 'No contact in 24+ hours',
+      label: `No contact in ${elapsed}`,
       pipColor: 'var(--db-error)',
       textColor: 'var(--db-error)',
       show: true,
@@ -30,7 +38,7 @@ export function getUrgency(lead: Lead): UrgencyInfo {
   }
   if (hrs > 4) {
     return {
-      label: 'No contact in 4+ hours',
+      label: `No contact in ${elapsed}`,
       pipColor: 'var(--db-warning)',
       textColor: 'var(--db-warning)',
       show: true,

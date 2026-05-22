@@ -9,6 +9,7 @@ import { Users, Filter, Search, X } from 'lucide-react';
 
 interface OutletContext {
   setRefreshFn: (fn: (() => void) | null) => void;
+  adminName: string;
 }
 
 const STAT_FILTER_LABELS: Record<FilterKey, string> = {
@@ -46,7 +47,7 @@ function matchesSearch(lead: Lead, query: string): boolean {
 }
 
 export default function LeadsPage() {
-  const { setRefreshFn } = useOutletContext<OutletContext>();
+  const { setRefreshFn, adminName } = useOutletContext<OutletContext>();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -353,6 +354,7 @@ export default function LeadsPage() {
         lead={selectedLead}
         onClose={() => setSelectedLead(null)}
         onStatusChange={handleStatusChange}
+        adminName={adminName}
       />
     </>
   );

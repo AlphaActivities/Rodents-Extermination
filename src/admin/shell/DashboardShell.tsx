@@ -32,10 +32,21 @@ export default function DashboardShell({ onSignOut }: Props) {
   // Refresh callback — passed down via context to child pages via Outlet context
   const [refreshFn, setRefreshFn] = useState<(() => void) | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [adminName, setAdminName] = useState('');
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserEmail(data.user?.email ?? '');
+      if (data.user) {
+        supabase
+          .from('admins')
+          .select('name')
+          .eq('id', data.user.id)
+          .maybeSingle()
+          .then(({ data: row }) => {
+            if (row?.name) setAdminName(row.name);
+          });
+      }
     });
   }, []);
 
@@ -97,7 +108,7 @@ export default function DashboardShell({ onSignOut }: Props) {
 
         {/* Scrollable content area */}
         <main className="flex-1 overflow-y-auto" style={{ background: 'var(--db-bg)' }}>
-          <Outlet context={{ setRefreshFn }} />
+          <Outlet context={{ setRefreshFn, adminName }} />
         </main>
       </div>
     </div>

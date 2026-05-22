@@ -17,6 +17,7 @@ export interface LeadNote {
 
 function formatNoteDate(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {
+    timeZone: 'America/Chicago',
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -117,9 +118,10 @@ function NoteEditor({ initialBody = '', onSave, onCancel, saving, saveError }: N
 interface NoteItemProps {
   note: LeadNote;
   onUpdate: (id: string, body: string) => Promise<void>;
+  authorName: string;
 }
 
-function NoteItem({ note, onUpdate }: NoteItemProps) {
+function NoteItem({ note, onUpdate, authorName }: NoteItemProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -166,7 +168,7 @@ function NoteItem({ note, onUpdate }: NoteItemProps) {
       {/* Footer: timestamps + edit */}
       <div className="flex items-center justify-between gap-2 mt-2.5 flex-wrap">
         <div className="text-xs" style={{ color: 'var(--db-text-3)' }}>
-          <span>Admin · {formatNoteDate(note.created_at)}</span>
+          <span>{authorName || 'Admin'} · {formatNoteDate(note.created_at)}</span>
           {edited && (
             <span style={{ color: 'var(--db-text-3)' }}>
               {' · edited {}'.replace('{}', formatNoteDate(note.updated_at))}
@@ -204,9 +206,10 @@ interface Props {
   leadId: number;
   leadCreatedAt: string;
   leadStatus: string;
+  authorName: string;
 }
 
-export default function LeadNotes({ leadId, leadCreatedAt, leadStatus }: Props) {
+export default function LeadNotes({ leadId, leadCreatedAt, leadStatus, authorName }: Props) {
   const [notes, setNotes] = useState<LeadNote[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -345,7 +348,7 @@ export default function LeadNotes({ leadId, leadCreatedAt, leadStatus }: Props) 
           <div key={note.id} className="db-timeline-event db-timeline-event--note">
             <div className="db-timeline-dot db-timeline-dot--note" aria-hidden="true" />
             <div className="db-timeline-content w-full min-w-0">
-              <NoteItem note={note} onUpdate={handleUpdate} />
+              <NoteItem note={note} onUpdate={handleUpdate} authorName={authorName} />
             </div>
           </div>
         ))}

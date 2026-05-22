@@ -21,6 +21,7 @@ import LeadNotes from './LeadNotes';
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString('en-US', {
+    timeZone: 'America/Chicago',
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -212,9 +213,10 @@ interface Props {
   lead: Lead | null;
   onClose: () => void;
   onStatusChange: (id: number, status: LeadStatus) => void;
+  adminName: string;
 }
 
-export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
+export default function LeadDrawer({ lead, onClose, onStatusChange, adminName }: Props) {
   const drawerRef = useRef<HTMLDivElement>(null);
   const isOpen = lead !== null;
 
@@ -476,6 +478,7 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
                   leadId={lead.id}
                   leadCreatedAt={lead.created_at}
                   leadStatus={lead.status}
+                  authorName={adminName}
                 />
               </div>
 
