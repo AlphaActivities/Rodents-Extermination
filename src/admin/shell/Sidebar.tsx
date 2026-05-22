@@ -84,7 +84,8 @@ function BrandMark({ collapsed }: { collapsed?: boolean }) {
         <img
           src="/logo/white_logo.PNG"
           alt=""
-          className="w-full h-full object-contain"
+          className="object-contain"
+          style={{ width: '80%', height: '80%' }}
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
         />
       </div>

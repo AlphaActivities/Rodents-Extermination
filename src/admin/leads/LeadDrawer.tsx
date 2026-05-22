@@ -421,10 +421,38 @@ export default function LeadDrawer({ lead, onClose, onStatusChange, adminName }:
               {/* Contact details */}
               <div className="mb-6">
                 <SectionLabel>Contact</SectionLabel>
-                <DetailRow icon={Phone} label="Phone" value={lead.phone} />
-                {lead.email && (
-                  <DetailRow icon={Mail} label="Email" value={lead.email} breakAll />
-                )}
+                <div className="flex flex-wrap gap-x-5 gap-y-2.5">
+                  <a
+                    href={`tel:${lead.phone.replace(/\D/g, '')}`}
+                    className="flex items-center gap-2 min-w-0 group"
+                    aria-label={`Call ${lead.phone}`}
+                  >
+                    <Phone className="w-4 h-4 shrink-0 transition-colors" style={{ color: 'var(--db-text-3)' }} />
+                    <span
+                      className="text-sm transition-colors"
+                      style={{ color: 'var(--db-text-2)' }}
+                    >
+                      {lead.phone}
+                    </span>
+                  </a>
+                  {lead.email && (
+                    <a
+                      href={`mailto:${lead.email}`}
+                      title={lead.email}
+                      className="flex items-center gap-2 min-w-0 group"
+                      style={{ flex: '1 1 140px' }}
+                      aria-label={`Email ${lead.email}`}
+                    >
+                      <Mail className="w-4 h-4 shrink-0 transition-colors" style={{ color: 'var(--db-text-3)' }} />
+                      <span
+                        className="text-sm truncate transition-colors"
+                        style={{ color: 'var(--db-text-2)' }}
+                      >
+                        {lead.email}
+                      </span>
+                    </a>
+                  )}
+                </div>
               </div>
 
               {/* Service */}
