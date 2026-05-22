@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   X,
   Phone,
@@ -10,8 +10,12 @@ import {
   Hash,
   AlertTriangle,
   CheckCircle2,
+  Loader2,
 } from 'lucide-react';
-import { Lead } from './LeadCard';
+import { Lead, LeadStatus } from './LeadCard';
+import StatusBadge, { STATUS_CONFIG } from '../components/StatusBadge';
+import { getUrgency } from '../components/urgency';
+import { supabase } from '../../lib/supabase';
 
 // ── helpers ──────────────────────────────────────────────────
 
@@ -38,29 +42,6 @@ function timeAgo(iso: string): string {
   return `${days}d ago`;
 }
 
-function urgencyLabel(iso: string): { label: string; color: string; icon: React.ReactNode } | null {
-  const hrs = (Date.now() - new Date(iso).getTime()) / 3600000;
-  if (hrs > 24) {
-    return {
-      label: 'No contact in 24+ hours',
-      color: 'var(--db-error)',
-      icon: <AlertTriangle className="w-3.5 h-3.5" />,
-    };
-  }
-  if (hrs > 4) {
-    return {
-      label: 'No contact in 4+ hours',
-      color: 'var(--db-warning)',
-      icon: <AlertTriangle className="w-3.5 h-3.5" />,
-    };
-  }
-  return {
-    label: 'Recent lead',
-    color: 'var(--db-success)',
-    icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-  };
-}
-
 // ── sub-components ───────────────────────────────────────────
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -83,10 +64,15 @@ interface DetailRowProps {
 
 function DetailRow({ icon: Icon, label, value, breakAll }: DetailRowProps) {
   return (
-    <div className="flex items-start gap-3 py-2.5" style={{ borderBottom: '1px solid var(--db-border)' }}>
+    <div
+      className="flex items-start gap-3 py-2.5"
+      style={{ borderBottom: '1px solid var(--db-border)' }}
+    >
       <Icon className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--db-text-3)' }} />
       <div className="min-w-0 flex-1">
-        <div className="text-xs mb-0.5" style={{ color: 'var(--db-text-3)' }}>{label}</div>
+        <div className="text-xs mb-0.5" style={{ color: 'var(--db-text-3)' }}>
+          {label}
+        </div>
         <div
           className={['text-sm leading-relaxed', breakAll ? 'break-all' : ''].join(' ')}
           style={{ color: 'var(--db-text-2)' }}
@@ -98,16 +84,85 @@ function DetailRow({ icon: Icon, label, value, breakAll }: DetailRowProps) {
   );
 }
 
+// ── status selector ──────────────────────────────────────────
+
+const STATUS_ORDER: LeadStatus[] = ['new', 'contacted', 'quoted', 'closed', 'archived'];
+
+interface StatusSelectorProps {
+  current: LeadStatus;
+  saving: boolean;
+  saveError: string | null;
+  onChange: (s: LeadStatus) => void;
+}
+
+function StatusSelector({ current, saving, saveError, onChange }: StatusSelectorProps) {
+  return (
+    <div>
+      <SectionLabel>Status</SectionLabel>
+
+      {/* Button grid */}
+      <div className="flex flex-wrap gap-2 mb-2">
+        {STATUS_ORDER.map((s) => {
+          const cfg = STATUS_CONFIG[s];
+          const active = current === s;
+          return (
+            <button
+              key={s}
+              type="button"
+              disabled={saving}
+              onClick={() => !active && onChange(s)}
+              className="db-status-option"
+              data-active={active ? 'true' : undefined}
+              style={
+                active
+                  ? { color: cfg.color, background: cfg.bg, borderColor: cfg.border }
+                  : undefined
+              }
+              aria-pressed={active}
+            >
+              {saving && active ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <span
+                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                  style={{ background: cfg.color }}
+                />
+              )}
+              {cfg.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {saveError && (
+        <p className="text-xs mt-1.5" style={{ color: 'var(--db-error)' }}>
+          {saveError}
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ── main component ───────────────────────────────────────────
 
 interface Props {
   lead: Lead | null;
   onClose: () => void;
+  onStatusChange: (id: number, status: LeadStatus) => void;
 }
 
-export default function LeadDrawer({ lead, onClose }: Props) {
+export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
   const drawerRef = useRef<HTMLDivElement>(null);
   const isOpen = lead !== null;
+
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Reset save state when a different lead opens
+  useEffect(() => {
+    setSaveError(null);
+    setSaving(false);
+  }, [lead?.id]);
 
   // Escape key close
   useEffect(() => {
@@ -121,15 +176,32 @@ export default function LeadDrawer({ lead, onClose }: Props) {
 
   // Prevent body scroll while open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  const urgency = lead ? urgencyLabel(lead.created_at) : null;
+  const handleStatusChange = useCallback(
+    async (newStatus: LeadStatus) => {
+      if (!lead) return;
+      setSaving(true);
+      setSaveError(null);
+
+      const { error } = await supabase
+        .from('leads')
+        .update({ status: newStatus })
+        .eq('id', lead.id);
+
+      if (error) {
+        setSaveError('Failed to save. Please try again.');
+      } else {
+        onStatusChange(lead.id, newStatus);
+      }
+      setSaving(false);
+    },
+    [lead, onStatusChange]
+  );
+
+  const urgency = lead ? getUrgency(lead) : null;
 
   return (
     <>
@@ -152,12 +224,12 @@ export default function LeadDrawer({ lead, onClose }: Props) {
       >
         {lead && (
           <>
-            {/* ── Drag handle (mobile only) ─────────────────── */}
+            {/* ── Drag handle (mobile only) ──────────────── */}
             <div className="db-drawer-handle-row" aria-hidden="true">
               <div className="db-drawer-handle" />
             </div>
 
-            {/* ── Header ───────────────────────────────────── */}
+            {/* ── Header ────────────────────────────────── */}
             <div
               className="db-drawer-header"
               style={{ borderBottom: '1px solid var(--db-border)' }}
@@ -170,9 +242,12 @@ export default function LeadDrawer({ lead, onClose }: Props) {
                   >
                     {lead.name}
                   </h2>
-                  {lead.service_name && (
-                    <span className="db-badge mt-1.5 inline-block">{lead.service_name}</span>
-                  )}
+                  <div className="flex items-center flex-wrap gap-2 mt-1.5">
+                    {lead.service_name && (
+                      <span className="db-badge">{lead.service_name}</span>
+                    )}
+                    <StatusBadge status={lead.status} size="md" />
+                  </div>
                 </div>
                 <button
                   onClick={onClose}
@@ -185,13 +260,22 @@ export default function LeadDrawer({ lead, onClose }: Props) {
 
               {/* Urgency + timestamp */}
               <div className="flex flex-wrap items-center gap-3 mt-3">
-                {urgency && (
+                {urgency?.show && (
                   <div
                     className="flex items-center gap-1.5 text-xs font-medium"
-                    style={{ color: urgency.color }}
+                    style={{ color: urgency.textColor }}
                   >
-                    {urgency.icon}
+                    <AlertTriangle className="w-3.5 h-3.5" />
                     {urgency.label}
+                  </div>
+                )}
+                {!urgency?.show && lead.status !== 'new' && (
+                  <div
+                    className="flex items-center gap-1.5 text-xs font-medium"
+                    style={{ color: 'var(--db-success)' }}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    In progress
                   </div>
                 )}
                 <div
@@ -202,48 +286,58 @@ export default function LeadDrawer({ lead, onClose }: Props) {
                   {formatDate(lead.created_at)}
                   <span
                     className="px-1.5 py-0.5 rounded-md font-medium"
-                    style={{ background: 'var(--db-elevated)', color: 'var(--db-text-2)' }}
+                    style={{
+                      background: 'var(--db-surface)',
+                      color: 'var(--db-text-2)',
+                    }}
                   >
                     {timeAgo(lead.created_at)}
                   </span>
                 </div>
               </div>
+
+              {/* Quick actions — prominent right below header */}
+              <div className="flex flex-wrap gap-2 mt-4">
+                <a
+                  href={`tel:${lead.phone.replace(/\D/g, '')}`}
+                  className="db-action-btn"
+                  aria-label={`Call ${lead.name}`}
+                >
+                  <Phone className="w-4 h-4 shrink-0" />
+                  Call
+                </a>
+                <a
+                  href={`sms:${lead.phone.replace(/\D/g, '')}`}
+                  className="db-action-btn-secondary"
+                  aria-label={`Text ${lead.name}`}
+                >
+                  <Sms className="w-4 h-4 shrink-0" />
+                  Text
+                </a>
+                {lead.email && (
+                  <a
+                    href={`mailto:${lead.email}`}
+                    className="db-action-btn-secondary"
+                    aria-label={`Email ${lead.name}`}
+                  >
+                    <Mail className="w-4 h-4 shrink-0" />
+                    Email
+                  </a>
+                )}
+              </div>
             </div>
 
-            {/* ── Scrollable body ───────────────────────────── */}
+            {/* ── Scrollable body ───────────────────────── */}
             <div className="db-drawer-body">
 
-              {/* Quick actions */}
+              {/* Status selector */}
               <div className="mb-6">
-                <SectionLabel>Quick Actions</SectionLabel>
-                <div className="flex flex-wrap gap-2">
-                  <a
-                    href={`tel:${lead.phone.replace(/\D/g, '')}`}
-                    className="db-action-btn"
-                    aria-label={`Call ${lead.name}`}
-                  >
-                    <Phone className="w-4 h-4 shrink-0" />
-                    Call
-                  </a>
-                  <a
-                    href={`sms:${lead.phone.replace(/\D/g, '')}`}
-                    className="db-action-btn-secondary"
-                    aria-label={`Text ${lead.name}`}
-                  >
-                    <Sms className="w-4 h-4 shrink-0" />
-                    Text
-                  </a>
-                  {lead.email && (
-                    <a
-                      href={`mailto:${lead.email}`}
-                      className="db-action-btn-secondary"
-                      aria-label={`Email ${lead.name}`}
-                    >
-                      <Mail className="w-4 h-4 shrink-0" />
-                      Email
-                    </a>
-                  )}
-                </div>
+                <StatusSelector
+                  current={lead.status}
+                  saving={saving}
+                  saveError={saveError}
+                  onChange={handleStatusChange}
+                />
               </div>
 
               {/* Contact details */}
@@ -270,7 +364,7 @@ export default function LeadDrawer({ lead, onClose }: Props) {
                   <div
                     className="text-sm leading-relaxed p-3.5 rounded-xl"
                     style={{
-                      background: 'var(--db-elevated)',
+                      background: 'var(--db-surface)',
                       color: 'var(--db-text-2)',
                       border: '1px solid var(--db-border)',
                     }}
@@ -285,13 +379,28 @@ export default function LeadDrawer({ lead, onClose }: Props) {
                 <div className="mb-6">
                   <SectionLabel>Source Details</SectionLabel>
                   {lead.landing_page && (
-                    <DetailRow icon={Globe} label="Landing page" value={lead.landing_page} breakAll />
+                    <DetailRow
+                      icon={Globe}
+                      label="Landing page"
+                      value={lead.landing_page}
+                      breakAll
+                    />
                   )}
                   {lead.page_path && (
-                    <DetailRow icon={Globe} label="Page path" value={lead.page_path} breakAll />
+                    <DetailRow
+                      icon={Globe}
+                      label="Page path"
+                      value={lead.page_path}
+                      breakAll
+                    />
                   )}
                   {lead.referrer && (
-                    <DetailRow icon={Globe} label="Referrer" value={lead.referrer} breakAll />
+                    <DetailRow
+                      icon={Globe}
+                      label="Referrer"
+                      value={lead.referrer}
+                      breakAll
+                    />
                   )}
                   <DetailRow icon={Hash} label="Lead ID" value={String(lead.id)} />
                 </div>

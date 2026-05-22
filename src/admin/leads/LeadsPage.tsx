@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import LeadCard, { Lead } from './LeadCard';
+import LeadCard, { Lead, LeadStatus } from './LeadCard';
 import LeadDrawer from './LeadDrawer';
 import StatCardsRow, { computeStats, applyFilter } from '../components/StatCardsRow';
 import { FilterKey } from '../components/StatCard';
@@ -32,7 +32,7 @@ export default function LeadsPage() {
     const { data, error: err } = await supabase
       .from('leads')
       .select(
-        'id, created_at, name, phone, email, service_name, message, landing_page, page_path, referrer'
+        'id, created_at, name, phone, email, service_name, message, landing_page, page_path, referrer, status'
       )
       .order('created_at', { ascending: false });
     if (err) {
@@ -40,11 +40,10 @@ export default function LeadsPage() {
     } else {
       const fresh = data ?? [];
       setLeads(fresh);
-      // If drawer is open, refresh the selected lead data or close if gone
+      // Keep drawer in sync: refresh lead data or close if lead no longer exists
       setSelectedLead((prev) => {
         if (!prev) return null;
-        const updated = fresh.find((l) => l.id === prev.id);
-        return updated ?? null;
+        return fresh.find((l) => l.id === prev.id) ?? null;
       });
     }
     setLoading(false);
@@ -58,6 +57,16 @@ export default function LeadsPage() {
   useEffect(() => {
     fetchLeads();
   }, [fetchLeads]);
+
+  // Optimistic status update — no re-fetch needed
+  const handleStatusChange = useCallback((id: number, status: LeadStatus) => {
+    setLeads((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, status } : l))
+    );
+    setSelectedLead((prev) =>
+      prev?.id === id ? { ...prev, status } : prev
+    );
+  }, []);
 
   const stats = useMemo(() => computeStats(leads), [leads]);
   const filteredLeads = useMemo(
@@ -190,7 +199,10 @@ export default function LeadsPage() {
             <p className="font-semibold text-sm mb-1" style={{ color: 'var(--db-text-2)' }}>
               No leads yet
             </p>
-            <p className="text-xs leading-relaxed max-w-xs mx-auto" style={{ color: 'var(--db-text-3)' }}>
+            <p
+              className="text-xs leading-relaxed max-w-xs mx-auto"
+              style={{ color: 'var(--db-text-3)' }}
+            >
               Contact form submissions will appear here in real time.
             </p>
           </div>
@@ -211,7 +223,10 @@ export default function LeadsPage() {
             <p className="font-semibold text-sm mb-1" style={{ color: 'var(--db-text-2)' }}>
               No leads match this filter
             </p>
-            <p className="text-xs leading-relaxed max-w-xs mx-auto mb-4" style={{ color: 'var(--db-text-3)' }}>
+            <p
+              className="text-xs leading-relaxed max-w-xs mx-auto mb-4"
+              style={{ color: 'var(--db-text-3)' }}
+            >
               {FILTER_LABELS[activeFilter]} returned 0 results.
             </p>
             <button
@@ -243,6 +258,7 @@ export default function LeadsPage() {
       <LeadDrawer
         lead={selectedLead}
         onClose={() => setSelectedLead(null)}
+        onStatusChange={handleStatusChange}
       />
     </>
   );

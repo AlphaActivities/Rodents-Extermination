@@ -1,4 +1,8 @@
 import { Phone, Mail, Clock } from 'lucide-react';
+import StatusBadge from '../components/StatusBadge';
+import { getUrgency } from '../components/urgency';
+
+export type LeadStatus = 'new' | 'contacted' | 'quoted' | 'closed' | 'archived';
 
 export interface Lead {
   id: number;
@@ -11,6 +15,7 @@ export interface Lead {
   landing_page: string | null;
   page_path: string | null;
   referrer: string | null;
+  status: LeadStatus;
 }
 
 function formatDate(iso: string) {
@@ -35,25 +40,13 @@ function timeAgo(iso: string): string {
   return `${days}d ago`;
 }
 
-function UrgencyPip({ createdAt }: { createdAt: string }) {
-  const hrs = (Date.now() - new Date(createdAt).getTime()) / 3600000;
-  const color =
-    hrs > 24
-      ? 'var(--db-error)'
-      : hrs > 4
-      ? 'var(--db-warning)'
-      : 'var(--db-success)';
-  const title =
-    hrs > 24
-      ? 'No contact in 24+ hours'
-      : hrs > 4
-      ? 'No contact in 4+ hours'
-      : 'Recent lead';
+function UrgencyPip({ lead }: { lead: Lead }) {
+  const urgency = getUrgency(lead);
   return (
     <span
       className="shrink-0 inline-block w-2 h-2 rounded-full"
-      style={{ background: color }}
-      title={title}
+      style={{ background: urgency.pipColor }}
+      title={urgency.label}
     />
   );
 }
@@ -85,9 +78,9 @@ export default function LeadCard({ lead, index, onClick }: Props) {
     >
       <div className="p-4 sm:p-5">
 
-        {/* Row 1: urgency pip + name + service badge */}
+        {/* Row 1: urgency pip + name + service badge + status badge */}
         <div className="flex items-center gap-2 flex-wrap min-w-0 mb-2.5">
-          <UrgencyPip createdAt={lead.created_at} />
+          <UrgencyPip lead={lead} />
           <span
             className="font-semibold text-sm leading-tight truncate"
             style={{ color: 'var(--db-text-1)' }}
@@ -97,6 +90,7 @@ export default function LeadCard({ lead, index, onClick }: Props) {
           {lead.service_name && (
             <span className="db-badge shrink-0">{lead.service_name}</span>
           )}
+          <StatusBadge status={lead.status} />
         </div>
 
         {/* Row 2: timestamp */}
@@ -149,7 +143,7 @@ export default function LeadCard({ lead, index, onClick }: Props) {
           </p>
         )}
 
-        {/* "View details" hint */}
+        {/* View hint */}
         <div
           className="mt-3 text-xs font-medium"
           style={{ color: 'var(--db-text-3)' }}

@@ -59,7 +59,7 @@ const CARDS: Array<{
     icon: Bell,
     accentColor: '#ef4444',
     accentSoft: 'rgba(239,68,68,0.14)',
-    helpText: 'No contact in 4+ hours',
+    helpText: 'New · no contact 4+ hrs',
   },
 ];
 
@@ -80,8 +80,11 @@ export function computeStats(leads: Lead[]): Stats {
     insulation: leads.filter((l) =>
       l.service_name?.toLowerCase().includes('insulation')
     ).length,
+    // Needs follow-up: status is still 'new' AND older than 4 hours
     followUp: leads.filter(
-      (l) => (now - new Date(l.created_at).getTime()) / 3600000 > 4
+      (l) =>
+        l.status === 'new' &&
+        (now - new Date(l.created_at).getTime()) / 3600000 > 4
     ).length,
   };
 }
@@ -106,7 +109,9 @@ export function applyFilter(leads: Lead[], filter: FilterKey): Lead[] {
       );
     case 'follow_up':
       return leads.filter(
-        (l) => (now - new Date(l.created_at).getTime()) / 3600000 > 4
+        (l) =>
+          l.status === 'new' &&
+          (now - new Date(l.created_at).getTime()) / 3600000 > 4
       );
     case 'all':
     default:
