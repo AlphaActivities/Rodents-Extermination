@@ -248,13 +248,13 @@ export default function LeadDrawer({ lead, onClose, onStatusChange, adminName }:
       setSaving(true);
       setSaveError(null);
 
-      const { error } = await supabase
+      const { error, count } = await supabase
         .from('leads')
-        .update({ status: newStatus })
+        .update({ status: newStatus }, { count: 'exact' })
         .eq('id', lead.id);
 
-      if (error) {
-        setSaveError('Failed to save. Please try again.');
+      if (error || count === 0) {
+        setSaveError('Status could not be saved. Please try again.');
       } else {
         onStatusChange(lead.id, newStatus);
       }

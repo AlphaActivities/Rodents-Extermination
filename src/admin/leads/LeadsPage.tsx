@@ -90,7 +90,8 @@ export default function LeadsPage() {
   const handleStatusChange = useCallback((id: number, status: LeadStatus) => {
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
     setSelectedLead((prev) => (prev?.id === id ? { ...prev, status } : prev));
-  }, []);
+    fetchLeads();
+  }, [fetchLeads]);
 
   const stats = useMemo(() => computeStats(leads), [leads]);
 
