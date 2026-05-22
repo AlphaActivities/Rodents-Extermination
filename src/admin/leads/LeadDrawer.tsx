@@ -6,8 +6,6 @@ import {
   MessageSquare as Sms,
   Clock,
   Wrench,
-  Globe,
-  Hash,
   AlertTriangle,
   CheckCircle2,
   Loader2,
@@ -17,6 +15,7 @@ import { Lead, LeadStatus } from './LeadCard';
 import StatusBadge, { STATUS_CONFIG } from '../components/StatusBadge';
 import { getUrgency } from '../components/urgency';
 import { supabase } from '../../lib/supabase';
+import LeadNotes from './LeadNotes';
 
 // ── helpers ──────────────────────────────────────────────────
 
@@ -185,11 +184,12 @@ function StatusSelector({ current, saving, saveError, onChange }: StatusSelector
               aria-pressed={active}
             >
               {saving && active ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
+                <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" />
               ) : (
                 <span
                   className="w-1.5 h-1.5 rounded-full shrink-0"
                   style={{ background: active ? cfg.color : 'var(--db-text-3)' }}
+                  aria-hidden="true"
                 />
               )}
               {cfg.label}
@@ -315,7 +315,7 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
                   className="db-icon-btn shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
                   aria-label="Close drawer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
 
@@ -326,7 +326,7 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
                     className="flex items-center gap-1.5 text-xs font-medium"
                     style={{ color: urgency.textColor }}
                   >
-                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />
                     {urgency.label}
                   </div>
                 )}
@@ -335,7 +335,7 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
                     className="flex items-center gap-1.5 text-xs font-medium"
                     style={{ color: 'var(--db-success)' }}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
                     In progress
                   </div>
                 )}
@@ -343,21 +343,18 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
                   className="flex items-center gap-1.5 text-xs"
                   style={{ color: 'var(--db-text-3)' }}
                 >
-                  <Clock className="w-3 h-3" />
+                  <Clock className="w-3 h-3" aria-hidden="true" />
                   {formatDate(lead.created_at)}
                   <span
                     className="px-1.5 py-0.5 rounded-md font-medium"
-                    style={{
-                      background: 'var(--db-surface)',
-                      color: 'var(--db-text-2)',
-                    }}
+                    style={{ background: 'var(--db-surface)', color: 'var(--db-text-2)' }}
                   >
                     {timeAgo(lead.created_at)}
                   </span>
                 </div>
               </div>
 
-              {/* Quick actions — stop propagation prevents card click bleed */}
+              {/* Quick actions */}
               <div
                 className="flex flex-wrap gap-2 mt-4"
                 onClick={(e) => e.stopPropagation()}
@@ -367,7 +364,7 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
                   className="db-action-btn"
                   aria-label={`Call ${lead.name}`}
                 >
-                  <Phone className="w-4 h-4 shrink-0" />
+                  <Phone className="w-4 h-4 shrink-0" aria-hidden="true" />
                   Call {lead.phone}
                 </a>
                 <a
@@ -375,7 +372,7 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
                   className="db-action-btn-secondary"
                   aria-label={`Text ${lead.name}`}
                 >
-                  <Sms className="w-4 h-4 shrink-0" />
+                  <Sms className="w-4 h-4 shrink-0" aria-hidden="true" />
                   Text
                 </a>
                 {lead.email && (
@@ -384,7 +381,7 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
                     className="db-action-btn-secondary"
                     aria-label={`Email ${lead.name}`}
                   >
-                    <Mail className="w-4 h-4 shrink-0" />
+                    <Mail className="w-4 h-4 shrink-0" aria-hidden="true" />
                     Email
                   </a>
                 )}
@@ -404,7 +401,7 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
                     border: `1px solid ${nextAction.border}`,
                   }}
                 >
-                  <ArrowRight className="w-4 h-4 shrink-0" />
+                  <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />
                   {nextAction.text}
                 </div>
               )}
@@ -453,37 +450,35 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
                 </div>
               )}
 
-              {/* Source details */}
-              {(lead.landing_page || lead.page_path || lead.referrer || lead.id) && (
-                <div className="mb-6">
-                  <SectionLabel>Source Details</SectionLabel>
-                  {lead.landing_page && (
-                    <DetailRow
-                      icon={Globe}
-                      label="Landing page"
-                      value={lead.landing_page}
-                      breakAll
-                    />
-                  )}
-                  {lead.page_path && (
-                    <DetailRow
-                      icon={Globe}
-                      label="Page path"
-                      value={lead.page_path}
-                      breakAll
-                    />
-                  )}
-                  {lead.referrer && (
-                    <DetailRow
-                      icon={Globe}
-                      label="Referrer"
-                      value={lead.referrer}
-                      breakAll
-                    />
-                  )}
-                  <DetailRow icon={Hash} label="Lead ID" value={String(lead.id)} />
+              {/* Lead source — clean business label, no raw URLs */}
+              <div className="mb-6">
+                <SectionLabel>Lead Source</SectionLabel>
+                <div
+                  className="flex items-center gap-2 text-sm py-2"
+                  style={{ color: 'var(--db-text-2)' }}
+                >
+                  <span
+                    className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ background: 'var(--db-success)' }}
+                    aria-hidden="true"
+                  />
+                  Website Contact Form
                 </div>
-              )}
+              </div>
+
+              {/* ── Customer Timeline + Notes ──────────── */}
+              <div
+                className="pt-5"
+                style={{ borderTop: '1px solid var(--db-border)' }}
+              >
+                <LeadNotes
+                  key={lead.id}
+                  leadId={lead.id}
+                  leadCreatedAt={lead.created_at}
+                  leadStatus={lead.status}
+                />
+              </div>
+
             </div>
           </>
         )}

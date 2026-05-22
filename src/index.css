@@ -562,6 +562,176 @@
   box-shadow: 0 0 0 2px var(--db-accent);
 }
 
+/* ── Timeline layout ─────────────────────────────────────── */
+[data-app="admin"] .db-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+[data-app="admin"] .db-timeline-event {
+  display: flex;
+  gap: 0.875rem;
+  align-items: flex-start;
+  position: relative;
+  padding-bottom: 1.25rem;
+}
+
+/* Vertical connector line between events */
+[data-app="admin"] .db-timeline-event::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 14px;
+  bottom: 0;
+  width: 1px;
+  background: var(--db-border);
+}
+
+[data-app="admin"] .db-timeline-event:last-child::before {
+  display: none;
+}
+
+/* Dots */
+[data-app="admin"] .db-timeline-dot {
+  flex-shrink: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 9999px;
+  margin-top: 3px;
+  position: relative;
+  z-index: 1;
+}
+
+[data-app="admin"] .db-timeline-dot--system {
+  background: var(--db-accent);
+}
+
+[data-app="admin"] .db-timeline-dot--status {
+  background: var(--db-text-3);
+  border: 2px solid var(--db-border-hi);
+}
+
+[data-app="admin"] .db-timeline-dot--note {
+  background: var(--db-warning);
+}
+
+[data-app="admin"] .db-timeline-dot--new {
+  background: var(--db-success);
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.18);
+}
+
+/* Timeline text content */
+[data-app="admin"] .db-timeline-content {
+  flex: 1;
+  min-width: 0;
+}
+
+[data-app="admin"] .db-timeline-label {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+[data-app="admin"] .db-timeline-time {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--db-text-3);
+  margin-top: 0.125rem;
+}
+
+/* ── Note item ───────────────────────────────────────────── */
+[data-app="admin"] .db-note-item {
+  background: var(--db-surface);
+  border: 1px solid var(--db-border);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  width: 100%;
+  transition: border-color 0.15s ease;
+}
+
+[data-app="admin"] .db-note-item:hover {
+  border-color: var(--db-border-hi);
+}
+
+/* ── Note edit button ────────────────────────────────────── */
+[data-app="admin"] .db-note-edit-btn {
+  color: var(--db-text-3);
+  transition: color 0.14s ease;
+  padding: 0.25rem 0;
+}
+
+[data-app="admin"] .db-note-edit-btn:hover {
+  color: var(--db-accent-text);
+}
+
+[data-app="admin"] .db-note-edit-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--db-accent);
+  border-radius: 4px;
+}
+
+/* ── Note editor ─────────────────────────────────────────── */
+[data-app="admin"] .db-note-editor {
+  background: var(--db-surface);
+  border: 1px solid var(--db-border-hi);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  width: 100%;
+}
+
+[data-app="admin"] .db-note-textarea {
+  display: block;
+  width: 100%;
+  background: transparent;
+  color: var(--db-text-1);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  border: none;
+  caret-color: var(--db-accent-text);
+  font-family: inherit;
+}
+
+[data-app="admin"] .db-note-textarea::placeholder {
+  color: var(--db-text-3);
+}
+
+[data-app="admin"] .db-note-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Add note button ─────────────────────────────────────── */
+[data-app="admin"] .db-add-note-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px dashed var(--db-border-hi);
+  color: var(--db-text-2);
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  min-height: 44px;
+}
+
+[data-app="admin"] .db-add-note-btn:hover {
+  color: var(--db-text-1);
+  border-color: var(--db-accent-text);
+  background: var(--db-accent-soft);
+}
+
+[data-app="admin"] .db-add-note-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--db-accent);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
