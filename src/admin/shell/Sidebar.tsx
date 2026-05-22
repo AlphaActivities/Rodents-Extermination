@@ -78,11 +78,11 @@ function BrandMark({ collapsed }: { collapsed?: boolean }) {
     >
       <div
         className="shrink-0 flex items-center justify-center rounded-lg"
-        style={{ width: '32px', height: '32px', background: 'var(--db-accent)' }}
+        style={{ width: '32px', height: '32px', background: '#ffffff' }}
         aria-hidden="true"
       >
         <img
-          src="/logo/white_logo.PNG"
+          src="/logo/black_logo.PNG"
           alt=""
           className="object-contain"
           style={{ width: '80%', height: '80%' }}
