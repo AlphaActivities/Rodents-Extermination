@@ -451,6 +451,61 @@
   font-weight: 600;
 }
 
+/* ── Search input with left icon padding ─────────────────── */
+[data-app="admin"] .db-search-input {
+  padding-left: 2.375rem;
+  padding-right: 2.25rem;
+}
+
+/* ── Status chip row ─────────────────────────────────────── */
+[data-app="admin"] .db-chip-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px; /* prevent clipped focus ring */
+}
+
+[data-app="admin"] .db-chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Status chip button ──────────────────────────────────── */
+[data-app="admin"] .db-chip {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0.3125rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid var(--db-border);
+  background: var(--db-surface);
+  color: var(--db-text-2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+[data-app="admin"] .db-chip:hover:not([data-active]) {
+  background: var(--db-hover);
+  border-color: var(--db-border-hi);
+  color: var(--db-text-1);
+}
+
+[data-app="admin"] .db-chip[data-active="true"] {
+  background: var(--db-accent-soft);
+  border-color: rgba(37, 99, 235, 0.35);
+  color: var(--db-accent-text);
+  font-weight: 600;
+}
+
+[data-app="admin"] .db-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--db-accent);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;

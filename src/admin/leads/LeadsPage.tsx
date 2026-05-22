@@ -5,18 +5,45 @@ import LeadCard, { Lead, LeadStatus } from './LeadCard';
 import LeadDrawer from './LeadDrawer';
 import StatCardsRow, { computeStats, applyFilter } from '../components/StatCardsRow';
 import { FilterKey } from '../components/StatCard';
-import { Users, Filter } from 'lucide-react';
+import { Users, Filter, Search, X } from 'lucide-react';
 
 interface OutletContext {
   setRefreshFn: (fn: (() => void) | null) => void;
 }
 
-const FILTER_LABELS: Record<FilterKey, string> = {
+const STAT_FILTER_LABELS: Record<FilterKey, string> = {
   all: 'All Leads',
   today: "Today's Leads",
   insulation: 'Insulation Leads',
   follow_up: 'Needs Follow-Up',
 };
+
+type StatusChip = LeadStatus | 'all';
+
+const STATUS_CHIPS: Array<{ key: StatusChip; label: string }> = [
+  { key: 'all', label: 'All' },
+  { key: 'new', label: 'New' },
+  { key: 'contacted', label: 'Contacted' },
+  { key: 'quoted', label: 'Quoted' },
+  { key: 'closed', label: 'Closed' },
+  { key: 'archived', label: 'Archived' },
+];
+
+function normalize(s: string) {
+  return s.toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function matchesSearch(lead: Lead, query: string): boolean {
+  if (!query) return true;
+  const q = normalize(query);
+  return (
+    normalize(lead.name).includes(q) ||
+    normalize(lead.phone).includes(q) ||
+    (lead.email ? normalize(lead.email).includes(q) : false) ||
+    (lead.service_name ? normalize(lead.service_name).includes(q) : false) ||
+    (lead.message ? normalize(lead.message).includes(q) : false)
+  );
+}
 
 export default function LeadsPage() {
   const { setRefreshFn } = useOutletContext<OutletContext>();
@@ -24,6 +51,8 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
+  const [statusChip, setStatusChip] = useState<StatusChip>('all');
+  const [search, setSearch] = useState('');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const fetchLeads = useCallback(async () => {
@@ -40,7 +69,6 @@ export default function LeadsPage() {
     } else {
       const fresh = data ?? [];
       setLeads(fresh);
-      // Keep drawer in sync: refresh lead data or close if lead no longer exists
       setSelectedLead((prev) => {
         if (!prev) return null;
         return fresh.find((l) => l.id === prev.id) ?? null;
@@ -58,27 +86,50 @@ export default function LeadsPage() {
     fetchLeads();
   }, [fetchLeads]);
 
-  // Optimistic status update — no re-fetch needed
   const handleStatusChange = useCallback((id: number, status: LeadStatus) => {
-    setLeads((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, status } : l))
-    );
-    setSelectedLead((prev) =>
-      prev?.id === id ? { ...prev, status } : prev
-    );
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
+    setSelectedLead((prev) => (prev?.id === id ? { ...prev, status } : prev));
   }, []);
 
   const stats = useMemo(() => computeStats(leads), [leads]);
-  const filteredLeads = useMemo(
-    () => applyFilter(leads, activeFilter),
-    [leads, activeFilter]
-  );
+
+  // Apply stat-card filter first, then status chip, then search — all client-side
+  const visibleLeads = useMemo(() => {
+    let result = applyFilter(leads, activeFilter);
+    if (statusChip !== 'all') {
+      result = result.filter((l) => l.status === statusChip);
+    }
+    if (search.trim()) {
+      result = result.filter((l) => matchesSearch(l, search));
+    }
+    return result;
+  }, [leads, activeFilter, statusChip, search]);
 
   const handleFilterChange = useCallback((key: FilterKey) => {
     setActiveFilter((prev) => (prev === key ? 'all' : key));
   }, []);
 
-  const isFiltered = activeFilter !== 'all';
+  const clearAll = useCallback(() => {
+    setActiveFilter('all');
+    setStatusChip('all');
+    setSearch('');
+  }, []);
+
+  const hasAnyFilter =
+    activeFilter !== 'all' || statusChip !== 'all' || search.trim() !== '';
+
+  // Contextual count label
+  const countLabel = useMemo(() => {
+    if (loading) return null;
+    const parts: string[] = [];
+    if (activeFilter !== 'all') parts.push(STAT_FILTER_LABELS[activeFilter]);
+    if (statusChip !== 'all') parts.push(statusChip);
+    if (search.trim()) parts.push(`"${search.trim()}"`);
+    if (parts.length === 0) {
+      return `${leads.length} lead${leads.length !== 1 ? 's' : ''} · newest first`;
+    }
+    return `${visibleLeads.length} of ${leads.length} · ${parts.join(', ')}`;
+  }, [loading, leads.length, visibleLeads.length, activeFilter, statusChip, search]);
 
   return (
     <>
@@ -92,31 +143,74 @@ export default function LeadsPage() {
           loading={loading}
         />
 
+        {/* ── Search + status chips ───────────────────────────── */}
+        <div className="mt-5 space-y-3">
+          {/* Search bar */}
+          <div className="relative">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+              style={{ color: 'var(--db-text-3)' }}
+            />
+            <input
+              type="search"
+              className="db-input db-search-input"
+              placeholder="Search by name, phone, email, service, or message…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search leads"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 db-icon-btn w-6 h-6 rounded"
+                aria-label="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Status chips — horizontal scroll on mobile */}
+          <div className="db-chip-row">
+            {STATUS_CHIPS.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setStatusChip(key)}
+                className="db-chip"
+                data-active={statusChip === key ? 'true' : undefined}
+                aria-pressed={statusChip === key}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* ── List header ────────────────────────────────────── */}
-        <div className="flex items-center justify-between mt-6 mb-4">
+        <div className="flex items-center justify-between mt-4 mb-4">
           <div>
             <h2
               className="text-sm font-semibold"
               style={{ color: 'var(--db-text-1)' }}
             >
-              {loading ? 'Loading…' : FILTER_LABELS[activeFilter]}
+              {loading ? 'Loading…' : STAT_FILTER_LABELS[activeFilter]}
             </h2>
-            {!loading && (
+            {countLabel && (
               <p className="text-xs mt-0.5" style={{ color: 'var(--db-text-3)' }}>
-                {isFiltered
-                  ? `${filteredLeads.length} of ${leads.length} leads`
-                  : `${leads.length} lead${leads.length !== 1 ? 's' : ''} · newest first`}
+                {countLabel}
               </p>
             )}
           </div>
-          {isFiltered && !loading && (
+          {hasAnyFilter && !loading && (
             <button
               type="button"
-              onClick={() => setActiveFilter('all')}
+              onClick={clearAll}
               className="db-btn-ghost flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg"
             >
               <Filter className="w-3 h-3" />
-              Clear filter
+              Clear all
             </button>
           )}
         </div>
@@ -208,8 +302,8 @@ export default function LeadsPage() {
           </div>
         )}
 
-        {/* ── Empty: filter returns zero ─────────────────────── */}
-        {!loading && !error && leads.length > 0 && filteredLeads.length === 0 && (
+        {/* ── Empty: filter/search returns zero ─────────────── */}
+        {!loading && !error && leads.length > 0 && visibleLeads.length === 0 && (
           <div
             className="rounded-2xl p-10 text-center"
             style={{ background: 'var(--db-surface)', border: '1px solid var(--db-border)' }}
@@ -221,28 +315,28 @@ export default function LeadsPage() {
               <Filter className="w-5 h-5" style={{ color: 'var(--db-text-3)' }} />
             </div>
             <p className="font-semibold text-sm mb-1" style={{ color: 'var(--db-text-2)' }}>
-              No leads match this filter
+              No leads match
             </p>
             <p
               className="text-xs leading-relaxed max-w-xs mx-auto mb-4"
               style={{ color: 'var(--db-text-3)' }}
             >
-              {FILTER_LABELS[activeFilter]} returned 0 results.
+              Try adjusting your search or filters.
             </p>
             <button
               type="button"
-              onClick={() => setActiveFilter('all')}
+              onClick={clearAll}
               className="db-btn-ghost text-xs px-3 py-1.5 rounded-lg"
             >
-              Show all leads
+              Clear all filters
             </button>
           </div>
         )}
 
         {/* ── Lead list ──────────────────────────────────────── */}
-        {!loading && !error && filteredLeads.length > 0 && (
+        {!loading && !error && visibleLeads.length > 0 && (
           <div className="space-y-3">
-            {filteredLeads.map((lead, i) => (
+            {visibleLeads.map((lead, i) => (
               <LeadCard
                 key={lead.id}
                 lead={lead}

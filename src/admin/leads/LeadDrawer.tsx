@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Loader2,
+  ArrowRight,
 } from 'lucide-react';
 import { Lead, LeadStatus } from './LeadCard';
 import StatusBadge, { STATUS_CONFIG } from '../components/StatusBadge';
@@ -40,6 +41,71 @@ function timeAgo(iso: string): string {
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   return `${days}d ago`;
+}
+
+// ── next best action ─────────────────────────────────────────
+
+interface NextAction {
+  text: string;
+  color: string;
+  bg: string;
+  border: string;
+}
+
+function getNextAction(lead: Lead): NextAction {
+  const hrs = (Date.now() - new Date(lead.created_at).getTime()) / 3600000;
+
+  switch (lead.status) {
+    case 'new':
+      if (hrs > 24)
+        return {
+          text: 'Urgent follow-up — call now',
+          color: 'var(--db-error)',
+          bg: 'rgba(239,68,68,0.08)',
+          border: 'rgba(239,68,68,0.2)',
+        };
+      if (hrs > 4)
+        return {
+          text: 'Follow up now — call or text',
+          color: 'var(--db-warning)',
+          bg: 'rgba(245,158,11,0.08)',
+          border: 'rgba(245,158,11,0.2)',
+        };
+      return {
+        text: 'Call soon — fresh lead',
+        color: 'var(--db-success)',
+        bg: 'rgba(16,185,129,0.08)',
+        border: 'rgba(16,185,129,0.2)',
+      };
+    case 'contacted':
+      return {
+        text: 'Send quote / follow up',
+        color: '#fbbf24',
+        bg: 'rgba(245,158,11,0.08)',
+        border: 'rgba(245,158,11,0.18)',
+      };
+    case 'quoted':
+      return {
+        text: 'Check quote outcome',
+        color: '#60a5fa',
+        bg: 'rgba(37,99,235,0.08)',
+        border: 'rgba(37,99,235,0.18)',
+      };
+    case 'closed':
+      return {
+        text: 'Job completed / won',
+        color: 'var(--db-success)',
+        bg: 'rgba(16,185,129,0.08)',
+        border: 'rgba(16,185,129,0.18)',
+      };
+    case 'archived':
+      return {
+        text: 'No active action needed',
+        color: 'var(--db-text-3)',
+        bg: 'transparent',
+        border: 'var(--db-border)',
+      };
+  }
 }
 
 // ── sub-components ───────────────────────────────────────────
@@ -99,8 +165,6 @@ function StatusSelector({ current, saving, saveError, onChange }: StatusSelector
   return (
     <div>
       <SectionLabel>Status</SectionLabel>
-
-      {/* Button grid */}
       <div className="flex flex-wrap gap-2 mb-2">
         {STATUS_ORDER.map((s) => {
           const cfg = STATUS_CONFIG[s];
@@ -125,7 +189,7 @@ function StatusSelector({ current, saving, saveError, onChange }: StatusSelector
               ) : (
                 <span
                   className="w-1.5 h-1.5 rounded-full shrink-0"
-                  style={{ background: cfg.color }}
+                  style={{ background: active ? cfg.color : 'var(--db-text-3)' }}
                 />
               )}
               {cfg.label}
@@ -133,7 +197,6 @@ function StatusSelector({ current, saving, saveError, onChange }: StatusSelector
           );
         })}
       </div>
-
       {saveError && (
         <p className="text-xs mt-1.5" style={{ color: 'var(--db-error)' }}>
           {saveError}
@@ -158,13 +221,11 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // Reset save state when a different lead opens
   useEffect(() => {
     setSaveError(null);
     setSaving(false);
   }, [lead?.id]);
 
-  // Escape key close
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
@@ -174,7 +235,6 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
 
-  // Prevent body scroll while open
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -202,6 +262,7 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
   );
 
   const urgency = lead ? getUrgency(lead) : null;
+  const nextAction = lead ? getNextAction(lead) : null;
 
   return (
     <>
@@ -296,15 +357,18 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
                 </div>
               </div>
 
-              {/* Quick actions — prominent right below header */}
-              <div className="flex flex-wrap gap-2 mt-4">
+              {/* Quick actions — stop propagation prevents card click bleed */}
+              <div
+                className="flex flex-wrap gap-2 mt-4"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <a
                   href={`tel:${lead.phone.replace(/\D/g, '')}`}
                   className="db-action-btn"
                   aria-label={`Call ${lead.name}`}
                 >
                   <Phone className="w-4 h-4 shrink-0" />
-                  Call
+                  Call {lead.phone}
                 </a>
                 <a
                   href={`sms:${lead.phone.replace(/\D/g, '')}`}
@@ -329,6 +393,21 @@ export default function LeadDrawer({ lead, onClose, onStatusChange }: Props) {
 
             {/* ── Scrollable body ───────────────────────── */}
             <div className="db-drawer-body">
+
+              {/* Next best action banner */}
+              {nextAction && (
+                <div
+                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl mb-6 text-sm font-medium"
+                  style={{
+                    color: nextAction.color,
+                    background: nextAction.bg,
+                    border: `1px solid ${nextAction.border}`,
+                  }}
+                >
+                  <ArrowRight className="w-4 h-4 shrink-0" />
+                  {nextAction.text}
+                </div>
+              )}
 
               {/* Status selector */}
               <div className="mb-6">

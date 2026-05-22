@@ -1,4 +1,4 @@
-import { Phone, Mail, Clock } from 'lucide-react';
+import { Phone, Mail, MessageSquare as Sms, Clock } from 'lucide-react';
 import StatusBadge from '../components/StatusBadge';
 import { getUrgency } from '../components/urgency';
 
@@ -42,11 +42,12 @@ function timeAgo(iso: string): string {
 
 function UrgencyPip({ lead }: { lead: Lead }) {
   const urgency = getUrgency(lead);
+  const isUrgent = urgency.show;
   return (
     <span
-      className="shrink-0 inline-block w-2 h-2 rounded-full"
+      className={['shrink-0 inline-block w-2 h-2 rounded-full', isUrgent ? 'animate-pulse' : ''].join(' ')}
       style={{ background: urgency.pipColor }}
-      title={urgency.label}
+      title={urgency.label || lead.status}
     />
   );
 }
@@ -111,8 +112,13 @@ export default function LeadCard({ lead, index, onClick }: Props) {
           </span>
         </div>
 
-        {/* Row 3: contact buttons — stop propagation so clicks go to tel/mailto not drawer */}
-        <div className="flex flex-wrap gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
+        {/* Row 3: contact quick actions — stopPropagation so clicking tel/sms/mailto
+            does not open the drawer */}
+        <div
+          className="flex flex-wrap gap-2 mb-3"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Call — primary, most prominent */}
           <a
             href={`tel:${lead.phone.replace(/\D/g, '')}`}
             className="db-action-btn"
@@ -121,6 +127,16 @@ export default function LeadCard({ lead, index, onClick }: Props) {
             <Phone className="w-3.5 h-3.5 shrink-0" />
             <span>{lead.phone}</span>
           </a>
+          {/* Text */}
+          <a
+            href={`sms:${lead.phone.replace(/\D/g, '')}`}
+            className="db-action-btn-secondary"
+            aria-label={`Text ${lead.name}`}
+          >
+            <Sms className="w-3.5 h-3.5 shrink-0" />
+            <span>Text</span>
+          </a>
+          {/* Email — only shown when email exists */}
           {lead.email && (
             <a
               href={`mailto:${lead.email}`}
@@ -128,7 +144,7 @@ export default function LeadCard({ lead, index, onClick }: Props) {
               aria-label={`Email ${lead.name}`}
             >
               <Mail className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate max-w-[200px]">{lead.email}</span>
+              <span className="truncate max-w-[160px]">{lead.email}</span>
             </a>
           )}
         </div>
