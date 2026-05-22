@@ -53,10 +53,10 @@ export default function Topbar({
             onClick={onRefresh}
             disabled={refreshing}
             className="db-icon-btn"
-            aria-label="Refresh"
+            aria-label={refreshing ? 'Refreshing…' : 'Refresh leads'}
             title="Refresh"
           >
-            <RefreshCw className={['w-4 h-4', refreshing ? 'animate-spin' : ''].join(' ')} />
+            <RefreshCw className={['w-4 h-4', refreshing ? 'animate-spin' : ''].join(' ')} aria-hidden="true" />
           </button>
         )}
 
@@ -74,9 +74,10 @@ export default function Topbar({
         <button
           onClick={onSignOut}
           className="db-btn-ghost flex items-center gap-1.5 text-sm font-medium"
+          style={{ minHeight: '36px' }}
           aria-label="Sign out"
         >
-          <LogOut className="w-3.5 h-3.5" />
+          <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
           <span className="hidden sm:inline">Sign out</span>
         </button>
       </div>

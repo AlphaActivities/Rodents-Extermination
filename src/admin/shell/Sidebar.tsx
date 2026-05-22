@@ -16,206 +16,149 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Leads', to: '/admin/leads', icon: Users },
+  { label: 'Leads',     to: '/admin/leads',     icon: Users },
   { label: 'Analytics', to: '/admin/analytics', icon: BarChart2, disabled: true },
-  { label: 'Jobs', to: '/admin/jobs', icon: Wrench, disabled: true },
-  { label: 'Customers', to: '/admin/customers', icon: BookUser, disabled: true },
-  { label: 'Settings', to: '/admin/settings', icon: Settings2, disabled: true },
+  { label: 'Jobs',      to: '/admin/jobs',       icon: Wrench,    disabled: true },
+  { label: 'Customers', to: '/admin/customers',  icon: BookUser,  disabled: true },
+  { label: 'Settings',  to: '/admin/settings',   icon: Settings2, disabled: true },
 ];
 
-export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: SidebarProps) {
-  const sidebarContent = (
-    <aside
-      className={[
-        'db-sidebar flex flex-col h-full transition-all duration-250',
-        collapsed ? 'w-16' : 'w-60',
-      ].join(' ')}
-      style={{ background: 'var(--db-sidebar)', borderRight: '1px solid var(--db-border)' }}
-    >
-      {/* Brand area */}
-      <div
-        className="flex items-center gap-3 px-4 shrink-0"
-        style={{
-          height: '64px',
-          borderBottom: '1px solid var(--db-border)',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          className="shrink-0 flex items-center justify-center rounded-lg"
-          style={{
-            width: '32px',
-            height: '32px',
-            background: 'var(--db-accent)',
-          }}
-        >
-          <img
-            src="/logo/white_logo.PNG"
-            alt="Logo"
-            className="w-5 h-5 object-contain"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        </div>
-        {!collapsed && (
-          <div className="min-w-0">
+interface NavListProps {
+  collapsed?: boolean;
+  onNavigate: () => void;
+}
+
+function NavList({ collapsed, onNavigate }: NavListProps) {
+  return (
+    <ul className="space-y-0.5 px-2" role="list">
+      {navItems.map(({ label, to, icon: Icon, disabled }) => (
+        <li key={label}>
+          {disabled ? (
             <div
-              className="text-sm font-bold leading-tight truncate"
-              style={{ color: 'var(--db-text-1)' }}
-            >
-              Rodents Exterm
-            </div>
-            <div
-              className="text-xs leading-tight truncate"
+              title={collapsed ? label : undefined}
+              className="flex items-center gap-3 px-2.5 py-2.5 rounded-lg cursor-default select-none"
               style={{ color: 'var(--db-text-3)' }}
+              aria-disabled="true"
             >
-              Operations
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Nav items */}
-      <nav className="flex-1 py-4 overflow-y-auto overflow-x-hidden">
-        <ul className="space-y-0.5 px-2">
-          {navItems.map(({ label, to, icon: Icon, disabled }) => (
-            <li key={label}>
-              {disabled ? (
-                <div
-                  title={collapsed ? label : undefined}
-                  className="flex items-center gap-3 px-2.5 py-2.5 rounded-lg cursor-default select-none"
-                  style={{ color: 'var(--db-text-3)' }}
-                >
-                  <Icon className="shrink-0 w-4 h-4" />
-                  {!collapsed && (
-                    <span className="text-sm font-medium truncate">{label}</span>
-                  )}
-                </div>
-              ) : (
-                <NavLink
-                  to={to}
-                  title={collapsed ? label : undefined}
-                  className={({ isActive }) =>
-                    [
-                      'flex items-center gap-3 px-2.5 py-2.5 rounded-lg transition-colors duration-150',
-                      isActive
-                        ? 'db-sidebar-active'
-                        : 'db-sidebar-item',
-                    ].join(' ')
-                  }
-                  onClick={onCloseMobile}
-                >
-                  <Icon className="shrink-0 w-4 h-4" />
-                  {!collapsed && (
-                    <span className="text-sm font-medium truncate">{label}</span>
-                  )}
-                </NavLink>
+              <Icon className="shrink-0 w-4 h-4" aria-hidden="true" />
+              {!collapsed && (
+                <span className="text-sm font-medium truncate">{label}</span>
               )}
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      {/* Collapse toggle */}
-      <div
-        className="shrink-0 px-2 pb-4"
-        style={{ borderTop: '1px solid var(--db-border)', paddingTop: '12px' }}
-      >
-        <button
-          onClick={onToggleCollapse}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="db-sidebar-item w-full flex items-center gap-3 px-2.5 py-2.5 rounded-lg transition-colors duration-150"
-          style={{ justifyContent: collapsed ? 'center' : 'flex-start' }}
-        >
-          {collapsed ? (
-            <ChevronRight className="w-4 h-4 shrink-0" />
+            </div>
           ) : (
-            <>
-              <ChevronLeft className="w-4 h-4 shrink-0" />
-              <span className="text-sm font-medium">Collapse</span>
-            </>
+            <NavLink
+              to={to}
+              title={collapsed ? label : undefined}
+              aria-label={label}
+              className={({ isActive }) =>
+                [
+                  'flex items-center gap-3 px-2.5 py-2.5 rounded-lg transition-colors duration-150',
+                  isActive ? 'db-sidebar-active' : 'db-sidebar-item',
+                ].join(' ')
+              }
+              onClick={onNavigate}
+            >
+              <Icon className="shrink-0 w-4 h-4" aria-hidden="true" />
+              {!collapsed && (
+                <span className="text-sm font-medium truncate">{label}</span>
+              )}
+            </NavLink>
           )}
-        </button>
-      </div>
-    </aside>
+        </li>
+      ))}
+    </ul>
   );
+}
 
+function BrandMark({ collapsed }: { collapsed?: boolean }) {
+  return (
+    <div
+      className="flex items-center gap-3 px-4 shrink-0"
+      style={{ height: '64px', borderBottom: '1px solid var(--db-border)', overflow: 'hidden' }}
+    >
+      <div
+        className="shrink-0 flex items-center justify-center rounded-lg"
+        style={{ width: '32px', height: '32px', background: 'var(--db-accent)' }}
+        aria-hidden="true"
+      >
+        <img
+          src="/logo/white_logo.PNG"
+          alt=""
+          className="w-5 h-5 object-contain"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+        />
+      </div>
+      {!collapsed && (
+        <div className="min-w-0">
+          <div className="text-sm font-bold leading-tight truncate" style={{ color: 'var(--db-text-1)' }}>
+            Rodents Exterm
+          </div>
+          <div className="text-xs leading-tight truncate" style={{ color: 'var(--db-text-3)' }}>
+            Operations
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: SidebarProps) {
   return (
     <>
-      {/* Desktop sidebar */}
+      {/* ── Desktop sidebar ──────────────────────────────── */}
       <div className="hidden lg:flex h-screen sticky top-0 shrink-0">
-        {sidebarContent}
+        <aside
+          className={['db-sidebar flex flex-col h-full transition-all duration-200', collapsed ? 'w-16' : 'w-60'].join(' ')}
+          style={{ background: 'var(--db-sidebar)', borderRight: '1px solid var(--db-border)' }}
+          aria-label="Main navigation"
+        >
+          <BrandMark collapsed={collapsed} />
+
+          <nav className="flex-1 py-4 overflow-y-auto overflow-x-hidden" aria-label="Dashboard navigation">
+            <NavList collapsed={collapsed} onNavigate={() => {}} />
+          </nav>
+
+          <div
+            className="shrink-0 px-2 pb-4"
+            style={{ borderTop: '1px solid var(--db-border)', paddingTop: '12px' }}
+          >
+            <button
+              onClick={onToggleCollapse}
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className="db-sidebar-item w-full flex items-center gap-3 px-2.5 py-2.5 rounded-lg transition-colors duration-150"
+              style={{ justifyContent: collapsed ? 'center' : 'flex-start' }}
+            >
+              {collapsed
+                ? <ChevronRight className="w-4 h-4 shrink-0" aria-hidden="true" />
+                : (
+                  <>
+                    <ChevronLeft className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    <span className="text-sm font-medium">Collapse</span>
+                  </>
+                )
+              }
+            </button>
+          </div>
+        </aside>
       </div>
 
-      {/* Mobile overlay */}
+      {/* ── Mobile overlay ───────────────────────────────── */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          {/* Backdrop */}
+        <div className="lg:hidden fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label="Navigation menu">
           <div
             className="absolute inset-0"
             style={{ background: 'var(--db-overlay)' }}
             onClick={onCloseMobile}
+            aria-hidden="true"
           />
-          {/* Drawer panel — always expanded on mobile */}
-          <div className="relative z-10 flex flex-col w-60 h-full"
+          <div
+            className="relative z-10 flex flex-col w-60 h-full"
             style={{ background: 'var(--db-sidebar)', borderRight: '1px solid var(--db-border)' }}
           >
-            {/* Brand area */}
-            <div
-              className="flex items-center gap-3 px-4 shrink-0"
-              style={{ height: '64px', borderBottom: '1px solid var(--db-border)' }}
-            >
-              <div
-                className="shrink-0 flex items-center justify-center rounded-lg"
-                style={{ width: '32px', height: '32px', background: 'var(--db-accent)' }}
-              >
-                <img
-                  src="/logo/white_logo.PNG"
-                  alt="Logo"
-                  className="w-5 h-5 object-contain"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                />
-              </div>
-              <div className="min-w-0">
-                <div className="text-sm font-bold leading-tight truncate" style={{ color: 'var(--db-text-1)' }}>
-                  Rodents Exterm
-                </div>
-                <div className="text-xs leading-tight truncate" style={{ color: 'var(--db-text-3)' }}>
-                  Operations
-                </div>
-              </div>
-            </div>
-            {/* Nav */}
-            <nav className="flex-1 py-4 overflow-y-auto">
-              <ul className="space-y-0.5 px-2">
-                {navItems.map(({ label, to, icon: Icon, disabled }) => (
-                  <li key={label}>
-                    {disabled ? (
-                      <div
-                        className="flex items-center gap-3 px-2.5 py-2.5 rounded-lg cursor-default select-none"
-                        style={{ color: 'var(--db-text-3)' }}
-                      >
-                        <Icon className="shrink-0 w-4 h-4" />
-                        <span className="text-sm font-medium truncate">{label}</span>
-                      </div>
-                    ) : (
-                      <NavLink
-                        to={to}
-                        className={({ isActive }) =>
-                          ['flex items-center gap-3 px-2.5 py-2.5 rounded-lg transition-colors duration-150',
-                            isActive ? 'db-sidebar-active' : 'db-sidebar-item',
-                          ].join(' ')
-                        }
-                        onClick={onCloseMobile}
-                      >
-                        <Icon className="shrink-0 w-4 h-4" />
-                        <span className="text-sm font-medium truncate">{label}</span>
-                      </NavLink>
-                    )}
-                  </li>
-                ))}
-              </ul>
+            <BrandMark />
+            <nav className="flex-1 py-4 overflow-y-auto" aria-label="Dashboard navigation">
+              <NavList onNavigate={onCloseMobile} />
             </nav>
           </div>
         </div>

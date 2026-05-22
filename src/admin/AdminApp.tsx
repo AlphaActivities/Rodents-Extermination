@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import AdminLogin from './AdminLogin';
@@ -7,26 +7,37 @@ import LeadsPage from './leads/LeadsPage';
 
 type AuthState = 'loading' | 'unauthenticated' | 'authenticated';
 
-function buildRouter(onSignOut: () => void) {
-  return createBrowserRouter([
-    {
-      path: '/admin',
-      element: <DashboardShell onSignOut={onSignOut} />,
-      children: [
-        { index: true, element: <Navigate to="/admin/leads" replace /> },
-        { path: 'leads', element: <LeadsPage /> },
-      ],
-    },
-    // Catch-all: redirect any unknown /admin/* back to /admin/leads
-    {
-      path: '/admin/*',
-      element: <Navigate to="/admin/leads" replace />,
-    },
-  ]);
+// Stable sign-out handler passed to DashboardShell — triggers via ref so router
+// never needs to be rebuilt when auth state changes.
+function useSignOutRef(onSignOut: () => void) {
+  const ref = useRef(onSignOut);
+  ref.current = onSignOut;
+  return ref;
 }
 
 export default function AdminApp() {
   const [authState, setAuthState] = useState<AuthState>('loading');
+  const signOutRef = useSignOutRef(() => setAuthState('unauthenticated'));
+
+  // Router built once — DashboardShell calls signOutRef.current() on sign-out
+  const routerRef = useRef(
+    createBrowserRouter([
+      {
+        path: '/admin',
+        element: (
+          <DashboardShell onSignOut={() => signOutRef.current()} />
+        ),
+        children: [
+          { index: true, element: <Navigate to="/admin/leads" replace /> },
+          { path: 'leads', element: <LeadsPage /> },
+        ],
+      },
+      {
+        path: '/admin/*',
+        element: <Navigate to="/admin/leads" replace />,
+      },
+    ])
+  );
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -77,6 +88,5 @@ export default function AdminApp() {
     return <AdminLogin onAuthenticated={() => setAuthState('authenticated')} />;
   }
 
-  const router = buildRouter(() => setAuthState('unauthenticated'));
-  return <RouterProvider router={router} />;
+  return <RouterProvider router={routerRef.current} />;
 }
