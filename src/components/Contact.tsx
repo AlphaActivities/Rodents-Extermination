@@ -10,7 +10,6 @@ import {
   trackSubmitAnother,
   trackSectionView,
 } from '../analytics';
-import { supabase } from '../lib/supabase';
 
 const services = [
   'Blown-In Insulation',
@@ -104,21 +103,32 @@ export default function Contact() {
       referrer: payload.referrer ?? '',
     });
 
-    const [netlifyRes, supabaseResult] = await Promise.all([
+    const edgeFnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-lead`;
+
+    const [netlifyRes, edgeRes] = await Promise.all([
       fetch('/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: netlifyBody.toString(),
       }),
-      supabase.from('leads').insert([payload]),
+      fetch(edgeFnUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify(payload),
+      }),
     ]);
 
-    // Succeed if at least one channel captured the lead
-    if (!netlifyRes.ok && supabaseResult.error) {
+    if (!edgeRes.ok) {
       setError('Something went wrong. Please try again or call Steven directly at (972) 804-6456.');
       setLoading(false);
       return;
     }
+
+    void netlifyRes;
 
     trackFormSubmit(form.service, form.message.length > 0);
     setSubmitted(true);
