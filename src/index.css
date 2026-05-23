@@ -381,36 +381,6 @@
   display: none;
 }
 
-/* ── Lead card View Details CTA strip ───────────────────── */
-[data-app="admin"] .db-lead-card-cta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.625rem 1.25rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  border-top: 1px solid var(--db-border);
-  color: var(--db-accent-text);
-  background: var(--db-accent-soft);
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-[data-app="admin"] .db-lead-card:hover .db-lead-card-cta {
-  background: rgba(37, 99, 235, 0.22);
-  border-color: rgba(37, 99, 235, 0.18);
-}
-
-[data-app="admin"] .db-lead-card-cta-arrow {
-  display: inline-block;
-  font-size: 0.85rem;
-  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-[data-app="admin"] .db-lead-card:hover .db-lead-card-cta-arrow {
-  transform: translateX(3px);
-}
-
 /* ── Lead card clickable state ───────────────────────────── */
 [data-app="admin"] .db-lead-card {
   transition: border-color 0.15s ease, box-shadow 0.15s ease,
@@ -640,21 +610,11 @@
   color: var(--db-text-1);
 }
 
-/* Active chip uses inline color vars set by JS; fallback to accent */
 [data-app="admin"] .db-chip[data-active="true"] {
-  font-weight: 600;
-  /* color/background/borderColor come from inline styles set per chip */
-  filter: brightness(1.15);
-  box-shadow: 0 0 0 1px currentColor;
-}
-
-/* "All" chip active — no inline color, use accent */
-[data-app="admin"] .db-chip[data-active="true"]:not([style*="color"]) {
   background: var(--db-accent-soft);
   border-color: rgba(37, 99, 235, 0.35);
   color: var(--db-accent-text);
-  filter: none;
-  box-shadow: none;
+  font-weight: 600;
 }
 
 [data-app="admin"] .db-chip:focus-visible {
