@@ -12,22 +12,79 @@ interface OutletContext {
   adminName: string;
 }
 
-const STAT_FILTER_LABELS: Record<FilterKey, string> = {
-  all: 'All Leads',
-  today: "Today's Leads",
-  pipeline: 'Open Pipeline',
-  follow_up: 'Needs Follow-Up',
+const TILE_LABELS: Record<FilterKey, string> = {
+  all: 'Inbox',
+  new_leads: 'Fresh Leads',
+  active_jobs: 'Active Jobs',
+  check_in: 'Check In',
+};
+
+const TILE_EMPTY: Record<FilterKey, { headline: string; sub: string }> = {
+  all: {
+    headline: 'Inbox is clear',
+    sub: 'No open leads right now.',
+  },
+  new_leads: {
+    headline: 'No fresh leads waiting',
+    sub: 'All inbound leads have been contacted.',
+  },
+  active_jobs: {
+    headline: 'No active jobs',
+    sub: 'No leads are currently being worked.',
+  },
+  check_in: {
+    headline: 'No quotes pending',
+    sub: 'No leads are waiting on a decision.',
+  },
 };
 
 type StatusChip = LeadStatus | 'all';
 
-const STATUS_CHIPS: Array<{ key: StatusChip; label: string }> = [
+interface StatusChipDef {
+  key: StatusChip;
+  label: string;
+  color?: string;
+  bg?: string;
+  border?: string;
+}
+
+const STATUS_CHIPS: StatusChipDef[] = [
   { key: 'all', label: 'All' },
-  { key: 'new', label: 'New' },
-  { key: 'contacted', label: 'Contacted' },
-  { key: 'quoted', label: 'Quoted' },
-  { key: 'closed', label: 'Closed' },
-  { key: 'archived', label: 'Archived' },
+  {
+    key: 'new',
+    label: 'New',
+    color: '#60a5fa',
+    bg: 'rgba(37,99,235,0.10)',
+    border: 'rgba(37,99,235,0.22)',
+  },
+  {
+    key: 'contacted',
+    label: 'Contacted',
+    color: '#fbbf24',
+    bg: 'rgba(245,158,11,0.10)',
+    border: 'rgba(245,158,11,0.22)',
+  },
+  {
+    key: 'quoted',
+    label: 'Quoted',
+    color: '#c084fc',
+    bg: 'rgba(168,85,247,0.10)',
+    border: 'rgba(168,85,247,0.22)',
+  },
+  {
+    key: 'closed',
+    label: 'Closed',
+    color: '#34d399',
+    bg: 'rgba(52,211,153,0.10)',
+    border: 'rgba(52,211,153,0.22)',
+  },
+  {
+    key: 'archived',
+    label: 'Archived',
+    color: '#6b7280',
+    bg: 'rgba(107,114,128,0.09)',
+    border: 'rgba(107,114,128,0.20)',
+  },
 ];
 
 function normalize(s: string) {
@@ -68,7 +125,7 @@ export default function LeadsPage() {
     if (err) {
       setError('Failed to load leads.');
     } else {
-      const fresh = data ?? [];
+      const fresh = (data ?? []) as Lead[];
       setLeads(fresh);
       setSelectedLead((prev) => {
         if (!prev) return null;
@@ -78,6 +135,7 @@ export default function LeadsPage() {
     setLoading(false);
   }, []);
 
+  // Wrap fetchLeads in an object to avoid the functional-updater trap in DashboardShell
   useEffect(() => {
     setRefreshFn(fetchLeads);
     return () => setRefreshFn(null);
@@ -93,18 +151,23 @@ export default function LeadsPage() {
     fetchLeads();
   }, [fetchLeads]);
 
-  // Active worklist excludes archived; archived chip bypasses it to use raw leads
-  const worklist = useMemo(
-    () => leads.filter((l) => l.status !== 'archived'),
+  // Worklist: all leads (archived chip bypasses to raw leads for its own filter pass)
+  // computeStats internally excludes closed + archived from the Inbox count
+  const stats = useMemo(() => computeStats(leads), [leads]);
+
+  // Closed count for the chip badge
+  const closedCount = useMemo(
+    () => leads.filter((l) => l.status === 'closed').length,
     [leads]
   );
 
-  const stats = useMemo(() => computeStats(worklist), [worklist]);
-
-  // Apply stat-card filter first, then status chip, then search — all client-side
+  // Apply tile filter → status chip → search. Archived chip bypasses tile filter.
   const visibleLeads = useMemo(() => {
-    const base = statusChip === 'archived' ? leads : worklist;
-    let result = applyFilter(base, activeFilter);
+    const isArchived = statusChip === 'archived';
+    const isClosed = statusChip === 'closed';
+    // Closed and archived chips bypass the tile filter entirely
+    const base = isArchived || isClosed ? leads : leads.filter((l) => !['closed', 'archived'].includes(l.status));
+    let result = applyFilter(base, isArchived || isClosed ? 'all' : activeFilter);
     if (statusChip !== 'all') {
       result = result.filter((l) => l.status === statusChip);
     }
@@ -112,7 +175,7 @@ export default function LeadsPage() {
       result = result.filter((l) => matchesSearch(l, search));
     }
     return result;
-  }, [leads, worklist, activeFilter, statusChip, search]);
+  }, [leads, activeFilter, statusChip, search]);
 
   const handleFilterChange = useCallback((key: FilterKey) => {
     setActiveFilter((prev) => (prev === key ? 'all' : key));
@@ -127,18 +190,29 @@ export default function LeadsPage() {
   const hasAnyFilter =
     activeFilter !== 'all' || statusChip !== 'all' || search.trim() !== '';
 
-  // Contextual count label
   const countLabel = useMemo(() => {
     if (loading) return null;
     const parts: string[] = [];
-    if (activeFilter !== 'all') parts.push(STAT_FILTER_LABELS[activeFilter]);
+    if (activeFilter !== 'all') parts.push(TILE_LABELS[activeFilter]);
     if (statusChip !== 'all') parts.push(statusChip);
     if (search.trim()) parts.push(`"${search.trim()}"`);
     if (parts.length === 0) {
-      return `${worklist.length} lead${worklist.length !== 1 ? 's' : ''} · newest first`;
+      const open = leads.filter((l) => !['closed', 'archived'].includes(l.status)).length;
+      return `${open} lead${open !== 1 ? 's' : ''} · newest first`;
     }
     return `${visibleLeads.length} of ${leads.length} · ${parts.join(', ')}`;
-  }, [loading, leads.length, worklist.length, visibleLeads.length, activeFilter, statusChip, search]);
+  }, [loading, leads, visibleLeads.length, activeFilter, statusChip, search]);
+
+  // Tile-aware empty state — only used when tile filter is active and no status chip/search
+  const tileEmptyState =
+    !loading &&
+    !error &&
+    leads.length > 0 &&
+    visibleLeads.length === 0 &&
+    statusChip === 'all' &&
+    !search.trim()
+      ? TILE_EMPTY[activeFilter]
+      : null;
 
   return (
     <>
@@ -180,20 +254,44 @@ export default function LeadsPage() {
             )}
           </div>
 
-          {/* Status chips — horizontal scroll on mobile */}
+          {/* Status chips */}
           <div className="db-chip-row">
-            {STATUS_CHIPS.map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setStatusChip(key)}
-                className="db-chip"
-                data-active={statusChip === key ? 'true' : undefined}
-                aria-pressed={statusChip === key}
-              >
-                {label}
-              </button>
-            ))}
+            {STATUS_CHIPS.map(({ key, label, color, bg, border }) => {
+              const isActive = statusChip === key;
+              const count = key === 'closed' ? closedCount : undefined;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setStatusChip(key)}
+                  className="db-chip"
+                  data-active={isActive ? 'true' : undefined}
+                  style={
+                    !isActive && color
+                      ? { color, background: bg, borderColor: border }
+                      : undefined
+                  }
+                  aria-pressed={isActive}
+                >
+                  {label}
+                  {count !== undefined && count > 0 && (
+                    <span
+                      className="ml-1.5 inline-flex items-center justify-center rounded-full text-xs font-semibold tabular-nums"
+                      style={{
+                        minWidth: '1.1rem',
+                        height: '1.1rem',
+                        padding: '0 0.25rem',
+                        background: isActive ? 'rgba(255,255,255,0.18)' : 'rgba(52,211,153,0.18)',
+                        color: isActive ? 'inherit' : '#34d399',
+                        fontSize: '0.65rem',
+                      }}
+                    >
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -204,7 +302,7 @@ export default function LeadsPage() {
               className="text-sm font-semibold"
               style={{ color: 'var(--db-text-1)' }}
             >
-              {loading ? 'Loading…' : STAT_FILTER_LABELS[activeFilter]}
+              {loading ? 'Loading…' : TILE_LABELS[activeFilter]}
             </h2>
             {countLabel && (
               <p className="text-xs mt-0.5" style={{ color: 'var(--db-text-3)' }}>
@@ -311,8 +409,32 @@ export default function LeadsPage() {
           </div>
         )}
 
-        {/* ── Empty: filter/search returns zero ─────────────── */}
-        {!loading && !error && leads.length > 0 && visibleLeads.length === 0 && (
+        {/* ── Empty: tile-aware (tile active, no chip/search) ── */}
+        {tileEmptyState && (
+          <div
+            className="rounded-2xl p-10 text-center"
+            style={{ background: 'var(--db-surface)', border: '1px solid var(--db-border)' }}
+          >
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: 'var(--db-elevated)' }}
+            >
+              <Filter className="w-5 h-5" style={{ color: 'var(--db-text-3)' }} />
+            </div>
+            <p className="font-semibold text-sm mb-1" style={{ color: 'var(--db-text-2)' }}>
+              {tileEmptyState.headline}
+            </p>
+            <p
+              className="text-xs leading-relaxed max-w-xs mx-auto"
+              style={{ color: 'var(--db-text-3)' }}
+            >
+              {tileEmptyState.sub}
+            </p>
+          </div>
+        )}
+
+        {/* ── Empty: filter/search/chip returns zero ─────────── */}
+        {!loading && !error && leads.length > 0 && visibleLeads.length === 0 && !tileEmptyState && (
           <div
             className="rounded-2xl p-10 text-center"
             style={{ background: 'var(--db-surface)', border: '1px solid var(--db-border)' }}

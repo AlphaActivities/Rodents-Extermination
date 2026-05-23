@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type FilterKey = 'all' | 'today' | 'pipeline' | 'follow_up';
+export type FilterKey = 'all' | 'new_leads' | 'active_jobs' | 'check_in';
 
 interface StatCardProps {
   id: FilterKey;
@@ -10,6 +10,7 @@ interface StatCardProps {
   accentColor: string;
   accentSoft: string;
   helpText: string;
+  zeroText?: string;
   active: boolean;
   onClick: (id: FilterKey) => void;
   loading?: boolean;
@@ -23,10 +24,13 @@ export default function StatCard({
   accentColor,
   accentSoft,
   helpText,
+  zeroText,
   active,
   onClick,
   loading,
 }: StatCardProps) {
+  const displayHelp = !loading && value === 0 && zeroText ? zeroText : helpText;
+
   return (
     <button
       type="button"
@@ -51,8 +55,8 @@ export default function StatCard({
       <div
         className="db-stat-icon"
         style={{
-          background: active ? accentSoft : undefined,
-          color: active ? accentColor : undefined,
+          background: accentSoft,
+          color: accentColor,
         }}
       >
         <Icon className="w-4 h-4" />
@@ -88,7 +92,7 @@ export default function StatCard({
         className="text-xs leading-snug"
         style={{ color: 'var(--db-text-3)' }}
       >
-        {helpText}
+        {displayHelp}
       </div>
 
       {/* Active indicator bar */}

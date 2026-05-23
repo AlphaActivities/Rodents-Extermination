@@ -163,17 +163,10 @@ export default function LeadCard({ lead, index, onClick }: Props) {
 
       </div>
 
-      {/* View details strip — full-width bottom bar so it's obvious and tappable */}
-      <div
-        className="flex items-center justify-between px-4 sm:px-5 py-2.5 text-xs font-semibold"
-        style={{
-          borderTop: '1px solid var(--db-border)',
-          color: 'var(--db-accent-text)',
-          background: 'var(--db-accent-soft)',
-        }}
-      >
+      {/* View details strip */}
+      <div className="db-lead-card-cta">
         <span>View details</span>
-        <span aria-hidden="true" style={{ fontSize: '0.85rem' }}>→</span>
+        <span className="db-lead-card-cta-arrow" aria-hidden="true">→</span>
       </div>
     </article>
   );

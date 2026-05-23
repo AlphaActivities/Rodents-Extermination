@@ -1,13 +1,13 @@
 import React from 'react';
-import { Users, CalendarDays, Activity, Bell } from 'lucide-react';
+import { Inbox, Zap, Hammer, PhoneMissed } from 'lucide-react';
 import StatCard, { FilterKey } from './StatCard';
 import { Lead } from '../leads/LeadCard';
 
 interface Stats {
   total: number;
-  today: number;
-  pipeline: number;
-  followUp: number;
+  newLeads: number;
+  activeJobs: number;
+  checkIn: number;
 }
 
 interface Props {
@@ -25,80 +25,70 @@ const CARDS: Array<{
   accentColor: string;
   accentSoft: string;
   helpText: string;
+  zeroText: string;
 }> = [
   {
     id: 'all',
-    label: 'Active Leads',
+    label: 'Inbox',
     stat: 'total',
-    icon: Users,
-    accentColor: 'var(--db-accent-text)',
-    accentSoft: 'var(--db-accent-soft)',
-    helpText: 'All non-archived leads',
+    icon: Inbox,
+    accentColor: '#5ea8fb',
+    accentSoft: 'rgba(94,168,251,0.14)',
+    helpText: 'All open leads · not closed',
+    zeroText: 'Inbox clear',
   },
   {
-    id: 'today',
-    label: 'New Today',
-    stat: 'today',
-    icon: CalendarDays,
-    accentColor: '#34d399',
-    accentSoft: 'rgba(52,211,153,0.14)',
-    helpText: 'Received today (CT)',
+    id: 'new_leads',
+    label: 'Fresh Leads',
+    stat: 'newLeads',
+    icon: Zap,
+    accentColor: '#f97316',
+    accentSoft: 'rgba(249,115,22,0.14)',
+    helpText: 'Not yet contacted',
+    zeroText: 'All leads contacted',
   },
   {
-    id: 'pipeline',
-    label: 'Open Pipeline',
-    stat: 'pipeline',
-    icon: Activity,
-    accentColor: '#f59e0b',
-    accentSoft: 'rgba(245,158,11,0.14)',
-    helpText: 'Active · not closed',
+    id: 'active_jobs',
+    label: 'Active Jobs',
+    stat: 'activeJobs',
+    icon: Hammer,
+    accentColor: '#60a5fa',
+    accentSoft: 'rgba(96,165,250,0.14)',
+    helpText: 'Called · inspection or quote pending',
+    zeroText: 'No jobs in progress',
   },
   {
-    id: 'follow_up',
-    label: 'Follow-Up',
-    stat: 'followUp',
-    icon: Bell,
+    id: 'check_in',
+    label: 'Check In',
+    stat: 'checkIn',
+    icon: PhoneMissed,
     accentColor: '#ef4444',
     accentSoft: 'rgba(239,68,68,0.14)',
-    helpText: 'Contacted or quoted · needs close',
+    helpText: 'Quote delivered · awaiting decision',
+    zeroText: 'No quotes pending',
   },
 ];
 
-const CT_FMT = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'America/Chicago',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-});
-
-function isTodayCentral(iso: string): boolean {
-  return CT_FMT.format(new Date(iso)) === CT_FMT.format(new Date());
-}
-
 export function computeStats(leads: Lead[]): Stats {
   return {
-    total: leads.length,
-    today: leads.filter((l) => isTodayCentral(l.created_at)).length,
-    pipeline: leads.filter((l) => !['closed', 'archived'].includes(l.status)).length,
-    followUp: leads.filter(
-      (l) => l.status === 'contacted' || l.status === 'quoted'
-    ).length,
+    total: leads.filter((l) => !['closed', 'archived'].includes(l.status)).length,
+    newLeads: leads.filter((l) => l.status === 'new').length,
+    activeJobs: leads.filter((l) => l.status === 'contacted').length,
+    checkIn: leads.filter((l) => l.status === 'quoted').length,
   };
 }
 
 export function applyFilter(leads: Lead[], filter: FilterKey): Lead[] {
   switch (filter) {
-    case 'today':
-      return leads.filter((l) => isTodayCentral(l.created_at));
-    case 'pipeline':
-      return leads.filter((l) => !['closed', 'archived'].includes(l.status));
-    case 'follow_up':
-      return leads.filter(
-        (l) => l.status === 'contacted' || l.status === 'quoted'
-      );
+    case 'new_leads':
+      return leads.filter((l) => l.status === 'new');
+    case 'active_jobs':
+      return leads.filter((l) => l.status === 'contacted');
+    case 'check_in':
+      return leads.filter((l) => l.status === 'quoted');
     case 'all':
     default:
-      return leads;
+      return leads.filter((l) => !['closed', 'archived'].includes(l.status));
   }
 }
 
@@ -120,6 +110,7 @@ export default function StatCardsRow({
           accentColor={card.accentColor}
           accentSoft={card.accentSoft}
           helpText={card.helpText}
+          zeroText={card.zeroText}
           active={activeFilter === card.id}
           onClick={onFilterChange}
           loading={loading}

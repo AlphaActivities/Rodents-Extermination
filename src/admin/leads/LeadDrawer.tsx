@@ -459,7 +459,23 @@ export default function LeadDrawer({ lead, onClose, onStatusChange, adminName }:
               {lead.service_name && (
                 <div className="mb-6">
                   <SectionLabel>Service Requested</SectionLabel>
-                  <DetailRow icon={Wrench} label="Service" value={lead.service_name} />
+                  <div
+                    className="flex items-start gap-3 py-2.5"
+                    style={{ borderBottom: '1px solid var(--db-border)' }}
+                  >
+                    <Wrench className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--db-text-3)' }} />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs mb-0.5" style={{ color: 'var(--db-text-3)' }}>Service</div>
+                      <div className="flex items-center gap-2 text-sm leading-relaxed" style={{ color: 'var(--db-text-2)' }}>
+                        <span
+                          className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
+                          style={{ background: 'var(--db-success)' }}
+                          aria-hidden="true"
+                        />
+                        {lead.service_name}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 

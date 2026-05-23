@@ -29,8 +29,8 @@ export default function DashboardShell({ onSignOut }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
 
-  // Refresh callback — passed down via context to child pages via Outlet context
-  const [refreshFn, setRefreshFn] = useState<(() => void) | null>(null);
+  // Refresh callback — stored as { fn } to avoid React's functional-updater trap
+  const [refreshFn, setRefreshFn] = useState<{ fn: () => void } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [adminName, setAdminName] = useState('');
 
@@ -75,8 +75,11 @@ export default function DashboardShell({ onSignOut }: Props) {
   const handleRefresh = refreshFn
     ? async () => {
         setRefreshing(true);
-        await refreshFn();
-        setRefreshing(false);
+        try {
+          await refreshFn.fn();
+        } finally {
+          setRefreshing(false);
+        }
       }
     : undefined;
 
@@ -108,7 +111,7 @@ export default function DashboardShell({ onSignOut }: Props) {
 
         {/* Scrollable content area */}
         <main className="flex-1 overflow-y-auto" style={{ background: 'var(--db-bg)' }}>
-          <Outlet context={{ setRefreshFn, adminName }} />
+          <Outlet context={{ setRefreshFn: (fn: (() => void) | null) => setRefreshFn(fn ? { fn } : null), adminName }} />
         </main>
       </div>
     </div>
