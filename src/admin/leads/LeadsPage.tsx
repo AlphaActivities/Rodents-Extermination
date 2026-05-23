@@ -79,7 +79,7 @@ export default function LeadsPage() {
   }, []);
 
   useEffect(() => {
-    setRefreshFn(fetchLeads);
+    setRefreshFn(() => fetchLeads);
     return () => setRefreshFn(null);
   }, [fetchLeads, setRefreshFn]);
 

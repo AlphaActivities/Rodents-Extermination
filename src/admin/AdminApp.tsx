@@ -120,7 +120,7 @@ export default function AdminApp() {
   // Session restore goes directly to 'authenticated' and never calls this.
   const handleAuthenticated = () => {
     setAuthState('transitioning');
-    setTimeout(() => setAuthState('authenticated'), 900);
+    setTimeout(() => setAuthState('authenticated'), 2900);
   };
 
   if (authState === 'loading') {

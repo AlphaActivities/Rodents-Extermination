@@ -127,7 +127,7 @@
 /* Login success transition — glow ring on logo tile */
 [data-app="admin"] .login-success-glow {
   box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5);
-  animation: login-glow-pulse 0.9s ease-out forwards;
+  animation: login-glow-pulse 1.4s ease-out forwards;
 }
 
 @keyframes login-glow-pulse {
@@ -436,6 +436,29 @@
 [data-app="admin"] .db-lead-card:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--db-accent), 0 0 0 4px var(--db-accent-soft);
+}
+
+/* Hover-only sheen — desktop pointer devices only, no mobile repaint cost */
+@media (hover: hover) {
+  [data-app="admin"] .db-lead-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 38%,
+      rgba(255, 255, 255, 0.032) 50%,
+      transparent 62%
+    );
+    transform: translateX(-110%);
+    pointer-events: none;
+    z-index: 1;
+    transition: transform 0.6s ease;
+  }
+
+  [data-app="admin"] .db-lead-card:hover::before {
+    transform: translateX(110%);
+  }
 }
 
 /* ── Drawer backdrop ─────────────────────────────────────── */

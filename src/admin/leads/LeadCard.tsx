@@ -113,18 +113,15 @@ export default function LeadCard({ lead, index, onClick }: Props) {
           </span>
         </div>
 
-        {/* Row 3: contact quick actions — stopPropagation so clicking tel/sms/mailto
-            does not open the drawer. w-fit ensures dead-space to the right still
-            reaches the article's onClick and opens the drawer. */}
-        <div
-          className="flex flex-wrap gap-2 mb-3 w-fit"
-          onClick={(e) => e.stopPropagation()}
-        >
+        {/* Row 3: contact quick actions — stopPropagation on each link individually
+            so empty space around buttons reaches the article onClick and opens the drawer. */}
+        <div className="flex flex-wrap gap-2 mb-3 w-fit">
           {/* Call — primary, most prominent */}
           <a
             href={`tel:${lead.phone.replace(/\D/g, '')}`}
             className="db-action-btn"
             aria-label={`Call ${lead.name}`}
+            onClick={(e) => e.stopPropagation()}
           >
             <Phone className="w-3.5 h-3.5 shrink-0" />
             <span>{lead.phone}</span>
@@ -134,6 +131,7 @@ export default function LeadCard({ lead, index, onClick }: Props) {
             href={`sms:${lead.phone.replace(/\D/g, '')}`}
             className="db-action-btn-secondary"
             aria-label={`Text ${lead.name}`}
+            onClick={(e) => e.stopPropagation()}
           >
             <Sms className="w-3.5 h-3.5 shrink-0" />
             <span>Text</span>
@@ -144,6 +142,7 @@ export default function LeadCard({ lead, index, onClick }: Props) {
               href={`mailto:${lead.email}`}
               className="db-action-btn-secondary"
               aria-label={`Email ${lead.name}`}
+              onClick={(e) => e.stopPropagation()}
             >
               <Mail className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate max-w-[160px]">{lead.email}</span>

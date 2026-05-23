@@ -75,8 +75,11 @@ export default function DashboardShell({ onSignOut }: Props) {
   const handleRefresh = refreshFn
     ? async () => {
         setRefreshing(true);
-        await refreshFn();
-        setRefreshing(false);
+        try {
+          await refreshFn();
+        } finally {
+          setRefreshing(false);
+        }
       }
     : undefined;
 
