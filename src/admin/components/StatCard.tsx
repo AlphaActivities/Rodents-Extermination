@@ -53,8 +53,9 @@ export default function StatCard({
       <div
         className="db-stat-icon"
         style={{
-          background: active ? accentSoft : undefined,
+          background: accentSoft,
           color: active ? accentColor : undefined,
+          opacity: active ? 1 : 0.7,
         }}
       >
         <Icon className="w-4 h-4" />
