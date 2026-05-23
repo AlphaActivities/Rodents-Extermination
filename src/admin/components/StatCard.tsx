@@ -1,4 +1,5 @@
 import React from 'react';
+import { CheckCircle2 } from 'lucide-react';
 
 export type FilterKey = 'all' | 'today' | 'pipeline' | 'follow_up';
 
@@ -91,7 +92,16 @@ export default function StatCard({
         className="text-xs leading-snug"
         style={{ color: 'var(--db-text-3)' }}
       >
-        {!loading && value === 0 ? zeroHelpText : helpText}
+        {!loading && value === 0 ? (
+          <span className="flex items-center gap-1">
+            <CheckCircle2
+              className="w-3 h-3 shrink-0"
+              style={{ color: 'var(--db-success)' }}
+              aria-hidden="true"
+            />
+            {zeroHelpText}
+          </span>
+        ) : helpText}
       </div>
 
       {/* Active indicator bar */}

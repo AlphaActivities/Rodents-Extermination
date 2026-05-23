@@ -151,16 +151,6 @@ export default function LeadCard({ lead, index, onClick }: Props) {
           )}
         </div>
 
-        {/* Row 4: message preview */}
-        {lead.message && (
-          <p
-            className="text-xs leading-relaxed line-clamp-2"
-            style={{ color: 'var(--db-text-2)' }}
-          >
-            {lead.message}
-          </p>
-        )}
-
       </div>
 
       {/* View details strip — full-width bottom bar so it's obvious and tappable */}
