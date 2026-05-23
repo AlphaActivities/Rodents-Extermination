@@ -356,6 +356,37 @@
   pointer-events: none;
 }
 
+/* ── Inactive stat tile bottom-edge color leak ───────────── */
+/*
+   A thin 1px bottom edge preview using the tile's own accent color.
+   Fully static — no animation, no layout impact.
+   Centered inset so it reads as a preview, not the full active bar.
+   Suppressed on active tiles so the active bottom bar and shimmer dominate.
+*/
+[data-app="admin"] .db-stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 14%;
+  right: 14%;
+  height: 1px;
+  background: var(--db-tile-accent, var(--db-border-hi));
+  opacity: 0.28;
+  border-radius: 0 0 1px 1px;
+  transition: opacity 0.18s ease, left 0.18s ease, right 0.18s ease;
+  pointer-events: none;
+}
+
+[data-app="admin"] .db-stat-card:hover::after {
+  opacity: 0.50;
+  left: 7%;
+  right: 7%;
+}
+
+[data-app="admin"] .db-stat-card[data-active="true"]::after {
+  display: none;
+}
+
 /* ── Lead card clickable state ───────────────────────────── */
 [data-app="admin"] .db-lead-card {
   transition: border-color 0.15s ease, box-shadow 0.15s ease,

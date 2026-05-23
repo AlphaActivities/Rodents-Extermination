@@ -106,7 +106,7 @@ export function applyFilter(leads: Lead[], filter: FilterKey): Lead[] {
       );
     case 'all':
     default:
-      return leads;
+      return leads.filter((l) => l.status !== 'archived');
   }
 }
 
