@@ -60,7 +60,7 @@ const CARDS: Array<{
     icon: Bell,
     accentColor: '#ef4444',
     accentSoft: 'rgba(239,68,68,0.14)',
-    helpText: 'New · no contact 4+ hrs',
+    helpText: 'Contacted or quoted · needs close',
   },
 ];
 
@@ -76,23 +76,17 @@ function isTodayCentral(iso: string): boolean {
 }
 
 export function computeStats(leads: Lead[]): Stats {
-  const now = Date.now();
-
   return {
     total: leads.length,
     today: leads.filter((l) => isTodayCentral(l.created_at)).length,
     pipeline: leads.filter((l) => !['closed', 'archived'].includes(l.status)).length,
     followUp: leads.filter(
-      (l) =>
-        l.status === 'new' &&
-        (now - new Date(l.created_at).getTime()) / 3600000 > 4
+      (l) => l.status === 'contacted' || l.status === 'quoted'
     ).length,
   };
 }
 
 export function applyFilter(leads: Lead[], filter: FilterKey): Lead[] {
-  const now = Date.now();
-
   switch (filter) {
     case 'today':
       return leads.filter((l) => isTodayCentral(l.created_at));
@@ -100,9 +94,7 @@ export function applyFilter(leads: Lead[], filter: FilterKey): Lead[] {
       return leads.filter((l) => !['closed', 'archived'].includes(l.status));
     case 'follow_up':
       return leads.filter(
-        (l) =>
-          l.status === 'new' &&
-          (now - new Date(l.created_at).getTime()) / 3600000 > 4
+        (l) => l.status === 'contacted' || l.status === 'quoted'
       );
     case 'all':
     default:
