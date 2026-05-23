@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, CalendarDays, Activity, Bell } from 'lucide-react';
+import { Inbox, Sparkles, Activity, Bell } from 'lucide-react';
 import StatCard, { FilterKey } from './StatCard';
 import { Lead } from '../leads/LeadCard';
 
@@ -25,80 +25,70 @@ const CARDS: Array<{
   accentColor: string;
   accentSoft: string;
   helpText: string;
+  zeroHelpText: string;
 }> = [
   {
     id: 'all',
-    label: 'Active Leads',
+    label: 'Inbox',
     stat: 'total',
-    icon: Users,
+    icon: Inbox,
     accentColor: 'var(--db-accent-text)',
     accentSoft: 'var(--db-accent-soft)',
-    helpText: 'All non-archived leads',
+    helpText: 'All open leads · not closed',
+    zeroHelpText: 'Inbox clear',
   },
   {
     id: 'today',
-    label: 'New Today',
+    label: 'Fresh Leads',
     stat: 'today',
-    icon: CalendarDays,
-    accentColor: '#34d399',
-    accentSoft: 'rgba(52,211,153,0.14)',
-    helpText: 'Received today (CT)',
+    icon: Sparkles,
+    accentColor: '#f59e0b',
+    accentSoft: 'rgba(245,158,11,0.14)',
+    helpText: 'Not yet contacted',
+    zeroHelpText: 'All leads contacted',
   },
   {
     id: 'pipeline',
-    label: 'Open Pipeline',
+    label: 'Active Jobs',
     stat: 'pipeline',
     icon: Activity,
-    accentColor: '#f59e0b',
-    accentSoft: 'rgba(245,158,11,0.14)',
-    helpText: 'Active · not closed',
+    accentColor: '#34d399',
+    accentSoft: 'rgba(52,211,153,0.14)',
+    helpText: 'Called · inspection or quote pending',
+    zeroHelpText: 'No jobs in progress',
   },
   {
     id: 'follow_up',
-    label: 'Follow-Up',
+    label: 'Check In',
     stat: 'followUp',
     icon: Bell,
     accentColor: '#ef4444',
     accentSoft: 'rgba(239,68,68,0.14)',
-    helpText: 'Contacted or quoted · needs close',
+    helpText: 'Quote delivered · awaiting decision',
+    zeroHelpText: 'No quotes pending',
   },
 ];
 
-const CT_FMT = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'America/Chicago',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-});
-
-function isTodayCentral(iso: string): boolean {
-  return CT_FMT.format(new Date(iso)) === CT_FMT.format(new Date());
-}
-
 export function computeStats(leads: Lead[]): Stats {
   return {
-    total: leads.length,
-    today: leads.filter((l) => isTodayCentral(l.created_at)).length,
-    pipeline: leads.filter((l) => !['closed', 'archived'].includes(l.status)).length,
-    followUp: leads.filter(
-      (l) => l.status === 'contacted' || l.status === 'quoted'
-    ).length,
+    total: leads.filter((l) => l.status !== 'closed' && l.status !== 'archived').length,
+    today: leads.filter((l) => l.status === 'new').length,
+    pipeline: leads.filter((l) => l.status === 'contacted').length,
+    followUp: leads.filter((l) => l.status === 'quoted').length,
   };
 }
 
 export function applyFilter(leads: Lead[], filter: FilterKey): Lead[] {
   switch (filter) {
     case 'today':
-      return leads.filter((l) => isTodayCentral(l.created_at));
+      return leads.filter((l) => l.status === 'new');
     case 'pipeline':
-      return leads.filter((l) => !['closed', 'archived'].includes(l.status));
+      return leads.filter((l) => l.status === 'contacted');
     case 'follow_up':
-      return leads.filter(
-        (l) => l.status === 'contacted' || l.status === 'quoted'
-      );
+      return leads.filter((l) => l.status === 'quoted');
     case 'all':
     default:
-      return leads;
+      return leads.filter((l) => l.status !== 'closed' && l.status !== 'archived');
   }
 }
 
@@ -120,6 +110,7 @@ export default function StatCardsRow({
           accentColor={card.accentColor}
           accentSoft={card.accentSoft}
           helpText={card.helpText}
+          zeroHelpText={card.zeroHelpText}
           active={activeFilter === card.id}
           onClick={onFilterChange}
           loading={loading}

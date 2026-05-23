@@ -10,6 +10,7 @@ interface StatCardProps {
   accentColor: string;
   accentSoft: string;
   helpText: string;
+  zeroHelpText: string;
   active: boolean;
   onClick: (id: FilterKey) => void;
   loading?: boolean;
@@ -23,6 +24,7 @@ export default function StatCard({
   accentColor,
   accentSoft,
   helpText,
+  zeroHelpText,
   active,
   onClick,
   loading,
@@ -88,7 +90,7 @@ export default function StatCard({
         className="text-xs leading-snug"
         style={{ color: 'var(--db-text-3)' }}
       >
-        {helpText}
+        {!loading && value === 0 ? zeroHelpText : helpText}
       </div>
 
       {/* Active indicator bar */}

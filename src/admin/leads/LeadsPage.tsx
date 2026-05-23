@@ -13,10 +13,10 @@ interface OutletContext {
 }
 
 const STAT_FILTER_LABELS: Record<FilterKey, string> = {
-  all: 'All Leads',
-  today: "Today's Leads",
-  pipeline: 'Open Pipeline',
-  follow_up: 'Needs Follow-Up',
+  all: 'Inbox',
+  today: 'Fresh Leads',
+  pipeline: 'Active Jobs',
+  follow_up: 'Check In',
 };
 
 type StatusChip = LeadStatus | 'all';
@@ -93,13 +93,14 @@ export default function LeadsPage() {
     fetchLeads();
   }, [fetchLeads]);
 
-  // Active worklist excludes archived; archived chip bypasses it to use raw leads
+  // worklist = non-archived; used as base for non-archived chip paths
   const worklist = useMemo(
     () => leads.filter((l) => l.status !== 'archived'),
     [leads]
   );
 
-  const stats = useMemo(() => computeStats(worklist), [worklist]);
+  // computeStats now receives all leads and self-filters per tile definition
+  const stats = useMemo(() => computeStats(leads), [leads]);
 
   // Model D: chips and tiles are separate control modes — only one is active at a time.
   // Chip active → bypass tile filter entirely, show exact status from correct base.
@@ -141,10 +142,10 @@ export default function LeadsPage() {
     if (statusChip !== 'all') parts.push(statusChip);
     if (search.trim()) parts.push(`"${search.trim()}"`);
     if (parts.length === 0) {
-      return `${worklist.length} lead${worklist.length !== 1 ? 's' : ''} · newest first`;
+      return `${stats.total} lead${stats.total !== 1 ? 's' : ''} · newest first`;
     }
     return `${visibleLeads.length} of ${leads.length} · ${parts.join(', ')}`;
-  }, [loading, leads.length, worklist.length, visibleLeads.length, activeFilter, statusChip, search]);
+  }, [loading, leads.length, stats.total, visibleLeads.length, activeFilter, statusChip, search]);
 
   return (
     <>
