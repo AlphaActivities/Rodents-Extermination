@@ -28,12 +28,12 @@ const CARDS: Array<{
 }> = [
   {
     id: 'all',
-    label: 'Total Leads',
+    label: 'Active Leads',
     stat: 'total',
     icon: Users,
     accentColor: 'var(--db-accent-text)',
     accentSoft: 'var(--db-accent-soft)',
-    helpText: 'All time submissions',
+    helpText: 'All non-archived leads',
   },
   {
     id: 'today',

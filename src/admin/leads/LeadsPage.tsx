@@ -93,13 +93,13 @@ export default function LeadsPage() {
     fetchLeads();
   }, [fetchLeads]);
 
-  const stats = useMemo(() => computeStats(leads), [leads]);
-
   // Active worklist excludes archived; archived chip bypasses it to use raw leads
   const worklist = useMemo(
     () => leads.filter((l) => l.status !== 'archived'),
     [leads]
   );
+
+  const stats = useMemo(() => computeStats(worklist), [worklist]);
 
   // Apply stat-card filter first, then status chip, then search — all client-side
   const visibleLeads = useMemo(() => {
