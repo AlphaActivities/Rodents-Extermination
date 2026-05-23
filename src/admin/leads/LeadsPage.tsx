@@ -95,9 +95,16 @@ export default function LeadsPage() {
 
   const stats = useMemo(() => computeStats(leads), [leads]);
 
+  // Active worklist excludes archived; archived chip bypasses it to use raw leads
+  const worklist = useMemo(
+    () => leads.filter((l) => l.status !== 'archived'),
+    [leads]
+  );
+
   // Apply stat-card filter first, then status chip, then search — all client-side
   const visibleLeads = useMemo(() => {
-    let result = applyFilter(leads, activeFilter);
+    const base = statusChip === 'archived' ? leads : worklist;
+    let result = applyFilter(base, activeFilter);
     if (statusChip !== 'all') {
       result = result.filter((l) => l.status === statusChip);
     }
@@ -105,7 +112,7 @@ export default function LeadsPage() {
       result = result.filter((l) => matchesSearch(l, search));
     }
     return result;
-  }, [leads, activeFilter, statusChip, search]);
+  }, [leads, worklist, activeFilter, statusChip, search]);
 
   const handleFilterChange = useCallback((key: FilterKey) => {
     setActiveFilter((prev) => (prev === key ? 'all' : key));
@@ -128,10 +135,10 @@ export default function LeadsPage() {
     if (statusChip !== 'all') parts.push(statusChip);
     if (search.trim()) parts.push(`"${search.trim()}"`);
     if (parts.length === 0) {
-      return `${leads.length} lead${leads.length !== 1 ? 's' : ''} · newest first`;
+      return `${worklist.length} lead${worklist.length !== 1 ? 's' : ''} · newest first`;
     }
     return `${visibleLeads.length} of ${leads.length} · ${parts.join(', ')}`;
-  }, [loading, leads.length, visibleLeads.length, activeFilter, statusChip, search]);
+  }, [loading, leads.length, worklist.length, visibleLeads.length, activeFilter, statusChip, search]);
 
   return (
     <>
