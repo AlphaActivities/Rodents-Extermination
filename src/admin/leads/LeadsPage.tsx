@@ -189,6 +189,7 @@ export default function LeadsPage() {
                 onClick={() => setStatusChip(key)}
                 className="db-chip"
                 data-active={statusChip === key ? 'true' : undefined}
+                data-status={key}
                 aria-pressed={statusChip === key}
               >
                 {label}
