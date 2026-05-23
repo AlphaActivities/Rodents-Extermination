@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { LogIn, ShieldCheck, Loader2 } from 'lucide-react';
+import { LogIn, Loader2 } from 'lucide-react';
 
 interface Props {
   onAuthenticated: () => void;
@@ -41,6 +41,7 @@ export default function AdminLogin({ onAuthenticated }: Props) {
       return;
     }
 
+    (document.activeElement as HTMLElement | null)?.blur?.();
     onAuthenticated();
   };
 
@@ -55,15 +56,21 @@ export default function AdminLogin({ onAuthenticated }: Props) {
         <div className="text-center mb-8">
           <div
             className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5 shadow-lg"
-            style={{ background: 'var(--db-accent)' }}
+            style={{ background: '#ffffff' }}
           >
-            <ShieldCheck className="w-7 h-7 text-white" />
+            <img
+              src="/logo/black_logo.PNG"
+              alt="Rodents Exterm logo"
+              className="object-contain"
+              style={{ width: '80%', height: '80%' }}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
           </div>
           <h1
             className="text-xl font-bold"
             style={{ color: 'var(--db-text-1)' }}
           >
-            Admin Portal
+            Operations Center
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--db-text-3)' }}>
             Rodents Exterm &amp; Insulation LLC

@@ -5,7 +5,54 @@ import AdminLogin from './AdminLogin';
 import DashboardShell from './shell/DashboardShell';
 import LeadsPage from './leads/LeadsPage';
 
-type AuthState = 'loading' | 'unauthenticated' | 'authenticated';
+type AuthState = 'loading' | 'unauthenticated' | 'transitioning' | 'authenticated';
+
+function LoginSuccessOverlay() {
+  return (
+    <div
+      data-app="admin"
+      className="fixed inset-0 flex items-center justify-center z-50"
+      style={{ background: 'var(--db-bg)' }}
+    >
+      <div className="flex flex-col items-center gap-5">
+        {/* Logo tile with subtle glow ring */}
+        <div className="relative">
+          <div
+            className="absolute inset-0 rounded-2xl login-success-glow"
+            aria-hidden="true"
+          />
+          <div
+            className="relative inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-xl"
+            style={{ background: '#ffffff' }}
+          >
+            <img
+              src="/logo/black_logo.PNG"
+              alt=""
+              className="object-contain"
+              style={{ width: '80%', height: '80%' }}
+            />
+          </div>
+        </div>
+
+        {/* Status text */}
+        <div className="text-center">
+          <p
+            className="text-xs font-semibold uppercase tracking-widest mb-1.5"
+            style={{ color: 'var(--db-success)' }}
+          >
+            Access granted
+          </p>
+          <p
+            className="text-sm font-medium"
+            style={{ color: 'var(--db-text-2)' }}
+          >
+            Opening Operations Center
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Stable sign-out handler passed to DashboardShell — triggers via ref so router
 // never needs to be rebuilt when auth state changes.
@@ -69,6 +116,13 @@ export default function AdminApp() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Manual login callback: show premium transition before entering dashboard.
+  // Session restore goes directly to 'authenticated' and never calls this.
+  const handleAuthenticated = () => {
+    setAuthState('transitioning');
+    setTimeout(() => setAuthState('authenticated'), 900);
+  };
+
   if (authState === 'loading') {
     return (
       <div
@@ -84,8 +138,12 @@ export default function AdminApp() {
     );
   }
 
+  if (authState === 'transitioning') {
+    return <LoginSuccessOverlay />;
+  }
+
   if (authState === 'unauthenticated') {
-    return <AdminLogin onAuthenticated={() => setAuthState('authenticated')} />;
+    return <AdminLogin onAuthenticated={handleAuthenticated} />;
   }
 
   return <RouterProvider router={routerRef.current} />;

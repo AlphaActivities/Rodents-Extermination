@@ -358,16 +358,17 @@ export default function LeadDrawer({ lead, onClose, onStatusChange, adminName }:
 
               {/* Quick actions */}
               <div
-                className="flex flex-wrap gap-2 mt-4"
+                className="db-drawer-action-row mt-4"
                 onClick={(e) => e.stopPropagation()}
               >
                 <a
                   href={`tel:${lead.phone.replace(/\D/g, '')}`}
                   className="db-action-btn"
                   aria-label={`Call ${lead.name}`}
+                  style={{ minWidth: 0 }}
                 >
                   <Phone className="w-4 h-4 shrink-0" aria-hidden="true" />
-                  Call {lead.phone}
+                  <span className="truncate">Call {lead.phone}</span>
                 </a>
                 <a
                   href={`sms:${lead.phone.replace(/\D/g, '')}`}

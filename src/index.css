@@ -124,6 +124,25 @@
   border-color: var(--db-border-hi);
 }
 
+/* Login success transition — glow ring on logo tile */
+[data-app="admin"] .login-success-glow {
+  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5);
+  animation: login-glow-pulse 0.9s ease-out forwards;
+}
+
+@keyframes login-glow-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
+  60%  { box-shadow: 0 0 0 14px rgba(37, 99, 235, 0.15); }
+  100% { box-shadow: 0 0 0 20px rgba(37, 99, 235, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-app="admin"] .login-success-glow {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+  }
+}
+
 /* Primary button */
 [data-app="admin"] .db-btn-primary {
   display: inline-flex;
@@ -187,6 +206,21 @@
   background: var(--db-accent-soft);
   color: var(--db-accent-text);
   border: 1px solid rgba(37, 99, 235, 0.22);
+}
+
+/* Drawer action row — 1fr auto auto keeps all three buttons on one row.
+   Call gets available space; Text and Email are compact fixed-width. */
+[data-app="admin"] .db-drawer-action-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* When email is absent the row only has two children: 1fr + auto */
+[data-app="admin"] .db-drawer-action-row > :only-child,
+[data-app="admin"] .db-drawer-action-row > :first-child {
+  min-width: 0;
 }
 
 /* Action button — primary (call) */
@@ -501,6 +535,13 @@
   padding: 1.25rem 1.5rem 3rem; /* extra bottom for mobile safe area */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+
+/* Prevent iOS Safari input zoom (inputs below 16px trigger auto-zoom) */
+@media (max-width: 767px) {
+  [data-app="admin"] .db-input {
+    font-size: 1rem;
+  }
 }
 
 /* iOS safe-area inset for bottom sheet */
