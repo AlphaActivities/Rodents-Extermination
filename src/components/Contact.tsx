@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Phone, Mail, MapPin, Send, CheckCircle, Loader2 } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { supabase } from '../lib/supabase';
 import {
   trackCall,
   trackFormEngaged,
@@ -90,7 +91,7 @@ export default function Contact() {
       referrer: document.referrer || null,
     };
 
-    // POST to Netlify Forms and Supabase in parallel
+    // Fire-and-forget Netlify Forms backup — never blocks or fails the submission
     const netlifyBody = new URLSearchParams({
       'form-name': 'contact',
       name: payload.name,
@@ -102,30 +103,17 @@ export default function Contact() {
       page_path: payload.page_path,
       referrer: payload.referrer ?? '',
     });
-
-    const edgeFnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-lead`;
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: netlifyBody.toString(),
+    }).catch(() => {});
 
     try {
-      const [netlifyRes, edgeRes] = await Promise.all([
-        fetch('/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: netlifyBody.toString(),
-        }),
-        fetch(edgeFnUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            'Apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify(payload),
-        }),
-      ]);
+      const { error: insertError } = await supabase.from('leads').insert([payload]);
 
-      void netlifyRes;
-
-      if (!edgeRes.ok) {
+      if (insertError) {
+        console.error('Supabase insert error:', insertError);
         setError('Something went wrong while submitting your request. Please try again or call us directly at (972) 804-6456.');
         return;
       }
