@@ -321,6 +321,41 @@
   flex-shrink: 0;
 }
 
+/* ── Active stat tile edge shimmer ──────────────────────── */
+/*
+   ::before sits behind card content (z-index -1) and sweeps a
+   diagonal gradient across the card edge — accent colour only.
+   Only background-position animates: GPU-composited, zero layout cost.
+   Contained by overflow:hidden already on .db-stat-card.
+   Inactive tiles: no pseudo-element rendered at all.
+*/
+@keyframes db-tile-shimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+[data-app="admin"] .db-stat-card[data-active="true"]::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    transparent 25%,
+    var(--db-tile-accent-soft, rgba(94,168,251,0.24)) 44%,
+    var(--db-tile-accent, rgba(94,168,251,0.50)) 54%,
+    var(--db-tile-accent-soft, rgba(94,168,251,0.24)) 64%,
+    transparent 74%,
+    transparent 100%
+  );
+  background-size: 300% 300%;
+  animation: db-tile-shimmer 2.8s ease-in-out infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
 /* ── Lead card clickable state ───────────────────────────── */
 [data-app="admin"] .db-lead-card {
   transition: border-color 0.15s ease, box-shadow 0.15s ease,

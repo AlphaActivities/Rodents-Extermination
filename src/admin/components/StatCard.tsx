@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type FilterKey = 'all' | 'today' | 'insulation' | 'follow_up';
+export type FilterKey = 'all' | 'today' | 'pipeline' | 'follow_up';
 
 interface StatCardProps {
   id: FilterKey;

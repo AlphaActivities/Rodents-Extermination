@@ -15,7 +15,7 @@ interface OutletContext {
 const STAT_FILTER_LABELS: Record<FilterKey, string> = {
   all: 'All Leads',
   today: "Today's Leads",
-  insulation: 'Insulation Leads',
+  pipeline: 'Open Pipeline',
   follow_up: 'Needs Follow-Up',
 };
 

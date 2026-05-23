@@ -1,11 +1,12 @@
-import { Users, CalendarDays, Thermometer, Bell } from 'lucide-react';
+import React from 'react';
+import { Users, CalendarDays, Activity, Bell } from 'lucide-react';
 import StatCard, { FilterKey } from './StatCard';
 import { Lead } from '../leads/LeadCard';
 
 interface Stats {
   total: number;
   today: number;
-  insulation: number;
+  pipeline: number;
   followUp: number;
 }
 
@@ -36,21 +37,21 @@ const CARDS: Array<{
   },
   {
     id: 'today',
-    label: 'Today',
+    label: 'New Today',
     stat: 'today',
     icon: CalendarDays,
     accentColor: '#34d399',
     accentSoft: 'rgba(52,211,153,0.14)',
-    helpText: 'Received today',
+    helpText: 'Received today (CT)',
   },
   {
-    id: 'insulation',
-    label: 'Insulation',
-    stat: 'insulation',
-    icon: Thermometer,
+    id: 'pipeline',
+    label: 'Open Pipeline',
+    stat: 'pipeline',
+    icon: Activity,
     accentColor: '#f59e0b',
     accentSoft: 'rgba(245,158,11,0.14)',
-    helpText: 'Insulation service leads',
+    helpText: 'Active · not closed',
   },
   {
     id: 'follow_up',
@@ -63,24 +64,24 @@ const CARDS: Array<{
   },
 ];
 
+const CT_FMT = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Chicago',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+function isTodayCentral(iso: string): boolean {
+  return CT_FMT.format(new Date(iso)) === CT_FMT.format(new Date());
+}
+
 export function computeStats(leads: Lead[]): Stats {
   const now = Date.now();
-  const today = new Date();
 
   return {
     total: leads.length,
-    today: leads.filter((l) => {
-      const d = new Date(l.created_at);
-      return (
-        d.getFullYear() === today.getFullYear() &&
-        d.getMonth() === today.getMonth() &&
-        d.getDate() === today.getDate()
-      );
-    }).length,
-    insulation: leads.filter((l) =>
-      l.service_name?.toLowerCase().includes('insulation')
-    ).length,
-    // Needs follow-up: status is still 'new' AND older than 4 hours
+    today: leads.filter((l) => isTodayCentral(l.created_at)).length,
+    pipeline: leads.filter((l) => !['closed', 'archived'].includes(l.status)).length,
     followUp: leads.filter(
       (l) =>
         l.status === 'new' &&
@@ -91,22 +92,12 @@ export function computeStats(leads: Lead[]): Stats {
 
 export function applyFilter(leads: Lead[], filter: FilterKey): Lead[] {
   const now = Date.now();
-  const today = new Date();
 
   switch (filter) {
     case 'today':
-      return leads.filter((l) => {
-        const d = new Date(l.created_at);
-        return (
-          d.getFullYear() === today.getFullYear() &&
-          d.getMonth() === today.getMonth() &&
-          d.getDate() === today.getDate()
-        );
-      });
-    case 'insulation':
-      return leads.filter((l) =>
-        l.service_name?.toLowerCase().includes('insulation')
-      );
+      return leads.filter((l) => isTodayCentral(l.created_at));
+    case 'pipeline':
+      return leads.filter((l) => !['closed', 'archived'].includes(l.status));
     case 'follow_up':
       return leads.filter(
         (l) =>
