@@ -124,16 +124,17 @@
   border-color: var(--db-border-hi);
 }
 
-/* Login success transition — glow ring on logo tile */
+/* Login success transition — glow ring pulses 3 times over ~2.7s,
+   finishing cleanly ~200ms before the 2900ms JS timeout. */
 [data-app="admin"] .login-success-glow {
-  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5);
-  animation: login-glow-pulse 1.4s ease-out forwards;
+  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  animation: login-glow-pulse 0.9s ease-out 3 forwards;
 }
 
 @keyframes login-glow-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
-  60%  { box-shadow: 0 0 0 14px rgba(37, 99, 235, 0.15); }
-  100% { box-shadow: 0 0 0 20px rgba(37, 99, 235, 0); }
+  0%   { box-shadow: 0 0 0 0   rgba(37, 99, 235, 0.45); }
+  55%  { box-shadow: 0 0 0 13px rgba(37, 99, 235, 0.14); }
+  100% { box-shadow: 0 0 0 20px rgba(37, 99, 235, 0);    }
 }
 
 @media (prefers-reduced-motion: reduce) {
