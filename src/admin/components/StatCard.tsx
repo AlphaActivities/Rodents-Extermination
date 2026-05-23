@@ -38,8 +38,13 @@ export default function StatCard({
           ? {
               borderColor: accentColor,
               boxShadow: `0 0 0 1px ${accentColor}, 0 4px 20px ${accentSoft}`,
+              ['--db-tile-accent' as string]: accentColor,
+              ['--db-tile-accent-soft' as string]: accentSoft,
             }
-          : undefined
+          : {
+              ['--db-tile-accent' as string]: accentColor,
+              ['--db-tile-accent-soft' as string]: accentSoft,
+            }
       }
     >
       {/* Icon pill */}

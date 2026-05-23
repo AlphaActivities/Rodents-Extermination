@@ -356,6 +356,31 @@
   pointer-events: none;
 }
 
+/* ── Inactive stat tile bottom-edge color leak ──────────── */
+[data-app="admin"] .db-stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  border-radius: 9999px;
+  background: var(--db-tile-accent, rgba(94, 168, 251, 0.5));
+  opacity: 0.35;
+  pointer-events: none;
+  transition: opacity 0.18s ease, left 0.18s ease, right 0.18s ease;
+}
+
+[data-app="admin"] .db-stat-card:not([data-active]):hover::after {
+  opacity: 0.55;
+  left: 8%;
+  right: 8%;
+}
+
+[data-app="admin"] .db-stat-card[data-active="true"]::after {
+  display: none;
+}
+
 /* ── Lead card clickable state ───────────────────────────── */
 [data-app="admin"] .db-lead-card {
   transition: border-color 0.15s ease, box-shadow 0.15s ease,
