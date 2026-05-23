@@ -33,16 +33,14 @@ export default function StatCard({
       onClick={() => onClick(id)}
       className="db-stat-card"
       data-active={active ? 'true' : undefined}
-      style={{
-        '--db-tile-accent': accentColor,
-        '--db-tile-accent-soft': accentSoft,
-        ...(active
+      style={
+        active
           ? {
               borderColor: accentColor,
               boxShadow: `0 0 0 1px ${accentColor}, 0 4px 20px ${accentSoft}`,
             }
-          : {}),
-      } as React.CSSProperties}
+          : undefined
+      }
     >
       {/* Icon pill */}
       <div
