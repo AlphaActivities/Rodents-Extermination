@@ -101,12 +101,16 @@ export default function LeadsPage() {
 
   const stats = useMemo(() => computeStats(worklist), [worklist]);
 
-  // Apply stat-card filter first, then status chip, then search — all client-side
+  // Model D: chips and tiles are separate control modes — only one is active at a time.
+  // Chip active → bypass tile filter entirely, show exact status from correct base.
+  // Tile active → chip is 'all', apply normal tile filter from worklist.
   const visibleLeads = useMemo(() => {
-    const base = statusChip === 'archived' ? leads : worklist;
-    let result = applyFilter(base, activeFilter);
+    let result: Lead[];
     if (statusChip !== 'all') {
-      result = result.filter((l) => l.status === statusChip);
+      const base = statusChip === 'archived' ? leads : worklist;
+      result = base.filter((l) => l.status === statusChip);
+    } else {
+      result = applyFilter(worklist, activeFilter);
     }
     if (search.trim()) {
       result = result.filter((l) => matchesSearch(l, search));
@@ -114,8 +118,10 @@ export default function LeadsPage() {
     return result;
   }, [leads, worklist, activeFilter, statusChip, search]);
 
+  // Tile click resets chip to 'all'; clicking the same tile again deactivates it
   const handleFilterChange = useCallback((key: FilterKey) => {
     setActiveFilter((prev) => (prev === key ? 'all' : key));
+    setStatusChip('all');
   }, []);
 
   const clearAll = useCallback(() => {
@@ -186,7 +192,7 @@ export default function LeadsPage() {
               <button
                 key={key}
                 type="button"
-                onClick={() => setStatusChip(key)}
+                onClick={() => { setStatusChip(key); setActiveFilter('all'); }}
                 className="db-chip"
                 data-active={statusChip === key ? 'true' : undefined}
                 data-status={key}
@@ -205,7 +211,7 @@ export default function LeadsPage() {
               className="text-sm font-semibold"
               style={{ color: 'var(--db-text-1)' }}
             >
-              {loading ? 'Loading…' : STAT_FILTER_LABELS[activeFilter]}
+              {loading ? 'Loading…' : statusChip !== 'all' ? STATUS_CHIPS.find((c) => c.key === statusChip)!.label : STAT_FILTER_LABELS[activeFilter]}
             </h2>
             {countLabel && (
               <p className="text-xs mt-0.5" style={{ color: 'var(--db-text-3)' }}>
