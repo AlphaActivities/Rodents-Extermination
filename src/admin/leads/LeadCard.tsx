@@ -66,7 +66,8 @@ export default function LeadCard({ lead, index, onClick }: Props) {
       style={{
         animationDelay: `${index * 40}ms`,
         animationFillMode: 'backwards',
-      }}
+        '--sheen-delay': `${index * 0.75}s`,
+      } as React.CSSProperties}
       onClick={() => onClick(lead)}
       role="button"
       tabIndex={0}
