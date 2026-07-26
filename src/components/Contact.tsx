@@ -51,6 +51,7 @@ export default function Contact() {
   const [recaptchaToken, setRecaptchaToken] = useState('');
   const [recaptchaError, setRecaptchaError] = useState(false);
   const [recaptchaFailed, setRecaptchaFailed] = useState(false);
+  const [showRecaptcha, setShowRecaptcha] = useState(false);
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -63,6 +64,7 @@ export default function Contact() {
   const formStartedAtRef = useRef<string>('');
   const recaptchaWidgetIdRef = useRef<number | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
+  const recaptchaSectionRef = useRef<HTMLDivElement>(null);
   const hasEngagedRef = useRef(false);
   const successRef = useRef<HTMLDivElement>(null);
 
@@ -116,8 +118,18 @@ export default function Contact() {
             setRecaptchaToken(token);
             setRecaptchaError(false);
           },
-          'expired-callback': () => setRecaptchaToken(''),
-          'error-callback': () => setRecaptchaToken(''),
+          'expired-callback': () => {
+            setRecaptchaToken('');
+            if (showRecaptcha) {
+              setRecaptchaError(true);
+            }
+          },
+          'error-callback': () => {
+            setRecaptchaToken('');
+            if (showRecaptcha) {
+              setRecaptchaError(true);
+            }
+          },
         });
         setRecaptchaReady(true);
       } catch {
@@ -189,7 +201,11 @@ export default function Contact() {
     }
 
     if (!recaptchaToken) {
+      setShowRecaptcha(true);
       setRecaptchaError(true);
+      setTimeout(() => {
+        recaptchaSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 120);
       return;
     }
 
@@ -230,6 +246,7 @@ export default function Contact() {
       if (!response.ok) {
         const msg = result?.error || 'Something went wrong. Please try again or call (972) 804-6456.';
         setError(msg);
+        setShowRecaptcha(true);
         if (window.grecaptcha && recaptchaWidgetIdRef.current !== null) {
           window.grecaptcha.reset(recaptchaWidgetIdRef.current);
         }
@@ -240,11 +257,14 @@ export default function Contact() {
       trackFormSubmit(form.service, form.message.length > 0);
       setSubmitted(true);
       setRecaptchaToken('');
+      setShowRecaptcha(false);
+      setRecaptchaError(false);
       if (window.grecaptcha && recaptchaWidgetIdRef.current !== null) {
         window.grecaptcha.reset(recaptchaWidgetIdRef.current);
       }
     } catch {
       setError('Something went wrong while submitting your request. Please try again or call us directly at (972) 804-6456.');
+      setShowRecaptcha(true);
       if (window.grecaptcha && recaptchaWidgetIdRef.current !== null) {
         window.grecaptcha.reset(recaptchaWidgetIdRef.current);
       }
@@ -352,6 +372,8 @@ export default function Contact() {
                       setForm({ name: '', phone: '', email: '', service: '', message: '', property_zip: '', bot_field: '' });
                       setRecaptchaToken('');
                       setRecaptchaFailed(false);
+                      setShowRecaptcha(false);
+                      setRecaptchaError(false);
                       if (window.grecaptcha && recaptchaWidgetIdRef.current !== null) {
                         window.grecaptcha.reset(recaptchaWidgetIdRef.current);
                       }
@@ -492,18 +514,29 @@ export default function Contact() {
                     />
                   </div>
 
-                  {/* reCAPTCHA v2 checkbox */}
-                  <div>
-                    <div ref={recaptchaContainerRef} className="min-h-[78px]" aria-label="Spam verification" />
-                    {RECAPTCHA_SITE_KEY && !recaptchaReady && !recaptchaFailed && (
-                      <p className="text-neutral-400 text-xs mt-1.5" role="status">Loading verification…</p>
-                    )}
-                    {recaptchaError && (
-                      <p className="text-red-500 text-sm mt-1.5" role="alert">Please complete the spam check to submit.</p>
-                    )}
-                    {(!RECAPTCHA_SITE_KEY || recaptchaFailed) && (
-                      <p className="text-neutral-400 text-xs mt-1.5">Verification unavailable. Please call (972) 804-6456.</p>
-                    )}
+                  {/* reCAPTCHA v2 checkbox — hidden until first valid submit attempt */}
+                  <div
+                    ref={recaptchaSectionRef}
+                    className="recaptcha-reveal"
+                    data-open={showRecaptcha ? 'true' : 'false'}
+                    aria-expanded={showRecaptcha}
+                  >
+                    <div className="recaptcha-reveal-inner">
+                      <div className="pt-2 pb-1">
+                        <div className="flex justify-center w-full">
+                          <div ref={recaptchaContainerRef} aria-label="Spam verification" />
+                        </div>
+                        {RECAPTCHA_SITE_KEY && !recaptchaReady && !recaptchaFailed && (
+                          <p className="text-neutral-400 text-xs mt-1.5 text-center" role="status" aria-live="polite">Loading verification…</p>
+                        )}
+                        {recaptchaError && (
+                          <p className="text-red-500 text-sm mt-1.5 text-center" role="alert" aria-live="polite">Complete the verification below, then submit your request.</p>
+                        )}
+                        {(!RECAPTCHA_SITE_KEY || recaptchaFailed) && (
+                          <p className="text-neutral-400 text-xs mt-1.5 text-center" aria-live="polite">Verification unavailable. Please call (972) 804-6456.</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   {error && (

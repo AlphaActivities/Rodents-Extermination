@@ -1461,6 +1461,20 @@
   will-change: transform;
 }
 
+/* ── reCAPTCHA accessible reveal (grid-rows trick, no fixed height) ── */
+.recaptcha-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.recaptcha-reveal[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.recaptcha-reveal > .recaptcha-reveal-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
 /* ── Contact form success animation ──────────────────────── */
 @keyframes form-success-in {
   from {
