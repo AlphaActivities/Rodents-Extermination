@@ -417,5 +417,38 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Unable to submit. Please call us instead." }, 500, origin);
   }
 
+  // ── Netlify notification mirror (fire-and-forget after lead is saved) ──
+  try {
+    const netlifyBody = new URLSearchParams({
+      "form-name": "contact",
+      name,
+      phone,
+      email: email || "",
+      service_name,
+      message,
+      property_zip,
+      landing_page,
+      page_path,
+      referrer,
+      quality,
+      spam_score: String(spamScore),
+      service_area_status: serviceAreaStatus,
+    });
+
+    const netlifyRes = await fetch("https://rodentsextermandinsulationllc.com/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: netlifyBody.toString(),
+    });
+
+    if (netlifyRes.ok) {
+      console.log("Netlify notification mirror sent");
+    } else {
+      console.log(`Netlify notification mirror failed: ${netlifyRes.status}`);
+    }
+  } catch {
+    console.log("Netlify notification mirror failed: exception");
+  }
+
   return json({ success: true }, 201, origin);
 });

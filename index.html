@@ -182,6 +182,23 @@
     </script>
   </head>
   <body>
+    <!-- Static Netlify Forms blueprint (build-time detection only — not user-operable) -->
+    <form name="contact" method="POST" data-netlify="true" aria-hidden="true" hidden>
+      <input type="hidden" name="form-name" value="contact" />
+      <input type="hidden" name="name" />
+      <input type="hidden" name="phone" />
+      <input type="hidden" name="email" />
+      <input type="hidden" name="service_name" />
+      <input type="hidden" name="message" />
+      <input type="hidden" name="property_zip" />
+      <input type="hidden" name="landing_page" />
+      <input type="hidden" name="page_path" />
+      <input type="hidden" name="referrer" />
+      <input type="hidden" name="quality" />
+      <input type="hidden" name="spam_score" />
+      <input type="hidden" name="service_area_status" />
+    </form>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
