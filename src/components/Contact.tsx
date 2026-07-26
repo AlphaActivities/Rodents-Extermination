@@ -41,6 +41,7 @@ const services = [
   'Wildlife Removal',
   'Sanitation & Cleanup',
   'Commercial Services',
+  'Other / General Inquiry',
 ];
 
 export default function Contact() {
@@ -496,7 +497,9 @@ export default function Contact() {
 
                   <div>
                     <label className="block text-sm font-semibold text-neutral-700 mb-2" htmlFor="message">
-                      Briefly describe what you are seeing, hearing, or experiencing at the property. <span className="text-red-400 font-normal">*</span>
+                      {form.service === 'Other / General Inquiry'
+                        ? 'Tell us what you are contacting us about.'
+                        : 'Briefly describe what you are seeing, hearing, or experiencing at the property.'} <span className="text-red-400 font-normal">*</span>
                     </label>
                     <textarea
                       id="message"
@@ -509,7 +512,9 @@ export default function Contact() {
                       value={form.message}
                       onChange={handleChange}
                       onFocus={handleFocus}
-                      placeholder="Describe what you are seeing, hearing, or experiencing at the property..."
+                      placeholder={form.service === 'Other / General Inquiry'
+                        ? 'Describe your question, request, or reason for contacting us...'
+                        : 'Describe what you are seeing, hearing, or experiencing at the property...'}
                       className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-base sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition resize-none bg-neutral-50 hover:bg-white"
                     />
                   </div>

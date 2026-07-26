@@ -27,6 +27,7 @@ const APPROVED_SERVICES = [
   "Wildlife Removal",
   "Sanitation & Cleanup",
   "Commercial Services",
+  "Other / General Inquiry",
 ] as const;
 
 // ── Quality classes ───────────────────────────────────────────
