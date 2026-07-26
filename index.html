@@ -15,8 +15,14 @@
       window.scrollTo(0, 0);
     </script>
 
-    <!-- Google reCAPTCHA v2 -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <!-- Google reCAPTCHA v2 (explicit render) -->
+    <script>
+      window.__onRecaptchaLoad = function () {
+        window.__recaptchaApiReady = true;
+        window.dispatchEvent(new Event('recaptcha:loaded'));
+      };
+    </script>
+    <script src="https://www.google.com/recaptcha/api.js?render=explicit&onload=__onRecaptchaLoad" async defer></script>
 
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6X391M9KK7"></script>

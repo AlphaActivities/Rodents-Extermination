@@ -15,10 +15,18 @@ import {
 declare global {
   interface Window {
     grecaptcha?: {
-      render: (container: HTMLElement, opts: { sitekey: string; callback: (token: string) => void; 'expired-callback'?: () => void }) => number;
-      reset: (id: number) => void;
-      getResponse: (id: number) => string;
+      render: (container: HTMLElement, opts: {
+        sitekey: string;
+        callback: (token: string) => void;
+        'expired-callback'?: () => void;
+        'error-callback'?: () => void;
+      }) => number;
+      reset: (id?: number) => void;
+      getResponse: (id?: number) => string;
+      ready: (cb: () => void) => void;
     };
+    __onRecaptchaLoad?: () => void;
+    __recaptchaApiReady?: boolean;
   }
 }
 
@@ -40,6 +48,7 @@ export default function Contact() {
   const [recaptchaReady, setRecaptchaReady] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState('');
   const [recaptchaError, setRecaptchaError] = useState(false);
+  const [recaptchaFailed, setRecaptchaFailed] = useState(false);
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -72,35 +81,75 @@ export default function Contact() {
     if (!RECAPTCHA_SITE_KEY) return;
 
     let cancelled = false;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 40;
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
-    const tryRender = () => {
+    const scheduleRetry = () => {
       if (cancelled) return;
-      if (window.grecaptcha && recaptchaContainerRef.current && recaptchaWidgetIdRef.current === null) {
-        try {
-          recaptchaWidgetIdRef.current = window.grecaptcha.render(
-            recaptchaContainerRef.current,
-            {
-              sitekey: RECAPTCHA_SITE_KEY,
-              callback: (token: string) => {
-                setRecaptchaToken(token);
-                setRecaptchaError(false);
-              },
-              'expired-callback': () => {
-                setRecaptchaToken('');
-              },
-            },
-          );
-          setRecaptchaReady(true);
-        } catch {
-          setTimeout(tryRender, 500);
-        }
-      } else if (!window.grecaptcha) {
-        setTimeout(tryRender, 500);
+      attempts += 1;
+      if (attempts > MAX_ATTEMPTS) {
+        setRecaptchaFailed(true);
+        return;
+      }
+      timer = setTimeout(renderWidget, 250);
+    };
+
+    const renderWidget = () => {
+      if (cancelled) return;
+      const container = recaptchaContainerRef.current;
+      const grecaptcha = window.grecaptcha;
+      if (!container || !grecaptcha || typeof grecaptcha.render !== 'function') {
+        scheduleRetry();
+        return;
+      }
+      if (recaptchaWidgetIdRef.current !== null) {
+        setRecaptchaReady(true);
+        return;
+      }
+      try {
+        recaptchaWidgetIdRef.current = grecaptcha.render(container, {
+          sitekey: RECAPTCHA_SITE_KEY,
+          callback: (token: string) => {
+            setRecaptchaToken(token);
+            setRecaptchaError(false);
+          },
+          'expired-callback': () => setRecaptchaToken(''),
+          'error-callback': () => setRecaptchaToken(''),
+        });
+        setRecaptchaReady(true);
+      } catch {
+        scheduleRetry();
       }
     };
 
-    tryRender();
-    return () => { cancelled = true; };
+    const onLoad = () => {
+      if (cancelled) return;
+      const grecaptcha = window.grecaptcha;
+      if (grecaptcha && typeof grecaptcha.ready === 'function') {
+        grecaptcha.ready(renderWidget);
+      } else {
+        renderWidget();
+      }
+    };
+
+    if (window.__recaptchaApiReady) {
+      onLoad();
+    } else {
+      window.addEventListener('recaptcha:loaded', onLoad, { once: true });
+      scheduleRetry();
+    }
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('recaptcha:loaded', onLoad);
+      if (timer) clearTimeout(timer);
+      if (recaptchaWidgetIdRef.current !== null && recaptchaContainerRef.current) {
+        recaptchaContainerRef.current.innerHTML = '';
+      }
+      recaptchaWidgetIdRef.current = null;
+      setRecaptchaReady(false);
+    };
   }, []);
 
   const formatPhone = (value: string) => {
@@ -188,6 +237,10 @@ export default function Contact() {
 
       trackFormSubmit(form.service, form.message.length > 0);
       setSubmitted(true);
+      setRecaptchaToken('');
+      if (window.grecaptcha && recaptchaWidgetIdRef.current !== null) {
+        window.grecaptcha.reset(recaptchaWidgetIdRef.current);
+      }
     } catch {
       setError('Something went wrong while submitting your request. Please try again or call us directly at (972) 804-6456.');
       if (window.grecaptcha && recaptchaWidgetIdRef.current !== null) {
@@ -296,6 +349,7 @@ export default function Contact() {
                       formStartedAtRef.current = '';
                       setForm({ name: '', phone: '', email: '', service: '', message: '', property_zip: '', bot_field: '' });
                       setRecaptchaToken('');
+                      setRecaptchaFailed(false);
                       if (window.grecaptcha && recaptchaWidgetIdRef.current !== null) {
                         window.grecaptcha.reset(recaptchaWidgetIdRef.current);
                       }
@@ -439,13 +493,13 @@ export default function Contact() {
                   {/* reCAPTCHA v2 checkbox */}
                   <div>
                     <div ref={recaptchaContainerRef} className="min-h-[78px]" aria-label="Spam verification" />
-                    {!recaptchaReady && RECAPTCHA_SITE_KEY && (
+                    {RECAPTCHA_SITE_KEY && !recaptchaReady && !recaptchaFailed && (
                       <p className="text-neutral-400 text-xs mt-1.5" role="status">Loading verification…</p>
                     )}
                     {recaptchaError && (
                       <p className="text-red-500 text-sm mt-1.5" role="alert">Please complete the spam check to submit.</p>
                     )}
-                    {!RECAPTCHA_SITE_KEY && (
+                    {(!RECAPTCHA_SITE_KEY || recaptchaFailed) && (
                       <p className="text-neutral-400 text-xs mt-1.5">Verification unavailable. Please call (972) 804-6456.</p>
                     )}
                   </div>
