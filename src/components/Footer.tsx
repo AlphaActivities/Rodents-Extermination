@@ -176,7 +176,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3">
                 <Mail className="w-4 h-4 text-brand-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                <span className="text-neutral-500 text-sm">Email coming soon</span>
+                <a href="mailto:rodentsexterminsulationllc@gmail.com" className="text-neutral-400 hover:text-white text-sm transition-colors duration-200">rodentsexterminsulationllc@gmail.com</a>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-brand-400 flex-shrink-0 mt-0.5" aria-hidden="true" />

@@ -12,28 +12,46 @@ import {
   trackSectionView,
 } from '../analytics';
 
+declare global {
+  interface Window {
+    grecaptcha?: {
+      render: (container: HTMLElement, opts: { sitekey: string; callback: (token: string) => void; 'expired-callback'?: () => void }) => number;
+      reset: (id: number) => void;
+      getResponse: (id: number) => string;
+    };
+  }
+}
+
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY as string;
+
 const services = [
-  'Blown-In Insulation',
-  'Insulation Removal',
-  'Attic Restoration',
-  'Rodent Damage Cleanup',
-  'Air Sealing',
-  'Attic Inspection',
-  'Wildlife / Rodent Removal',
-  'Not Sure / Other',
+  'Attic Insulation',
+  'Radiant Barrier',
+  'Rodent Control',
+  'Wildlife Removal',
+  'Sanitation & Cleanup',
+  'Commercial Services',
 ];
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [recaptchaReady, setRecaptchaReady] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState('');
+  const [recaptchaError, setRecaptchaError] = useState(false);
   const [form, setForm] = useState({
     name: '',
     phone: '',
     email: '',
     service: '',
     message: '',
+    property_zip: '',
+    bot_field: '',
   });
+  const formStartedAtRef = useRef<string>('');
+  const recaptchaWidgetIdRef = useRef<number | null>(null);
+  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   const hasEngagedRef = useRef(false);
   const successRef = useRef<HTMLDivElement>(null);
 
@@ -41,7 +59,6 @@ export default function Contact() {
   const { ref: contactColRef, visible: contactColVisible } = useReveal();
   const { ref: formColRef, visible: formColVisible } = useReveal();
 
-  // Fire viewed_form_success and scroll to success state on mobile
   useEffect(() => {
     if (submitted) {
       trackFormSuccess();
@@ -51,8 +68,43 @@ export default function Contact() {
     }
   }, [submitted]);
 
+  useEffect(() => {
+    if (!RECAPTCHA_SITE_KEY) return;
+
+    let cancelled = false;
+
+    const tryRender = () => {
+      if (cancelled) return;
+      if (window.grecaptcha && recaptchaContainerRef.current && recaptchaWidgetIdRef.current === null) {
+        try {
+          recaptchaWidgetIdRef.current = window.grecaptcha.render(
+            recaptchaContainerRef.current,
+            {
+              sitekey: RECAPTCHA_SITE_KEY,
+              callback: (token: string) => {
+                setRecaptchaToken(token);
+                setRecaptchaError(false);
+              },
+              'expired-callback': () => {
+                setRecaptchaToken('');
+              },
+            },
+          );
+          setRecaptchaReady(true);
+        } catch {
+          setTimeout(tryRender, 500);
+        }
+      } else if (!window.grecaptcha) {
+        setTimeout(tryRender, 500);
+      }
+    };
+
+    tryRender();
+    return () => { cancelled = true; };
+  }, []);
+
   const formatPhone = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 10);
+    const digits = value.replace(/\D/g, '').slice(0, 11);
     if (digits.length <= 3) return digits.length ? `(${digits}` : '';
     if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
@@ -72,49 +124,65 @@ export default function Contact() {
       hasEngagedRef.current = true;
       trackFormEngaged();
     }
+    if (!formStartedAtRef.current) {
+      formStartedAtRef.current = new Date().toISOString();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     (document.activeElement as HTMLElement)?.blur();
+
+    if (form.bot_field) {
+      return;
+    }
+
+    if (!recaptchaToken) {
+      setRecaptchaError(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
-    const payload = {
-      name: form.name,
-      phone: form.phone,
-      email: form.email || null,
-      service_name: form.service,
-      message: form.message || null,
-      landing_page: window.location.href,
-      page_path: window.location.pathname,
-      referrer: document.referrer || null,
-    };
-
-    // Fire-and-forget Netlify Forms backup — never blocks or fails the submission
-    const netlifyBody = new URLSearchParams({
-      'form-name': 'contact',
-      name: payload.name,
-      phone: payload.phone,
-      email: payload.email ?? '',
-      service_name: payload.service_name ?? '',
-      message: payload.message ?? '',
-      landing_page: payload.landing_page,
-      page_path: payload.page_path,
-      referrer: payload.referrer ?? '',
-    });
-    fetch('/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: netlifyBody.toString(),
-    }).catch(() => {});
-
     try {
-      const { error: insertError } = await supabase.from('leads').insert([payload]);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
 
-      if (insertError) {
-        console.error('Supabase insert error:', insertError);
-        setError('Something went wrong while submitting your request. Please try again or call us directly at (972) 804-6456.');
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-lead`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+          body: JSON.stringify({
+            name: form.name,
+            phone: form.phone,
+            email: form.email || undefined,
+            service_name: form.service,
+            message: form.message,
+            property_zip: form.property_zip,
+            landing_page: window.location.href,
+            page_path: window.location.pathname,
+            referrer: document.referrer || undefined,
+            recaptcha_token: recaptchaToken,
+            bot_field: form.bot_field,
+            form_started_at: formStartedAtRef.current,
+          }),
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        const msg = result?.error || 'Something went wrong. Please try again or call (972) 804-6456.';
+        setError(msg);
+        if (window.grecaptcha && recaptchaWidgetIdRef.current !== null) {
+          window.grecaptcha.reset(recaptchaWidgetIdRef.current);
+        }
+        setRecaptchaToken('');
         return;
       }
 
@@ -122,6 +190,10 @@ export default function Contact() {
       setSubmitted(true);
     } catch {
       setError('Something went wrong while submitting your request. Please try again or call us directly at (972) 804-6456.');
+      if (window.grecaptcha && recaptchaWidgetIdRef.current !== null) {
+        window.grecaptcha.reset(recaptchaWidgetIdRef.current);
+      }
+      setRecaptchaToken('');
     } finally {
       setLoading(false);
     }
@@ -144,12 +216,6 @@ export default function Contact() {
           </p>
         </div>
 
-        {/*
-          Layout:
-          - Mobile: phone card → email/location info → form (stacked)
-          - Desktop: left sidebar (phone + info) | right 2-col form
-          The phone card is always rendered first in DOM order so it appears first on mobile.
-        */}
         <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 lg:gap-8">
 
           {/* ── Column 1: Contact info (phone first) ── */}
@@ -157,7 +223,7 @@ export default function Contact() {
             ref={contactColRef as React.RefObject<HTMLDivElement>}
             className={`space-y-4 lg:space-y-5 reveal-left ${contactColVisible ? 'reveal-visible' : ''}`}
           >
-            {/* Call card — primary, full prominence on mobile */}
+            {/* Call card */}
             <div className="bg-brand-500 rounded-2xl p-6 sm:p-8 text-white shadow-lg">
               <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 sm:mb-5">
                 <Phone className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
@@ -184,7 +250,7 @@ export default function Contact() {
               </div>
               <div>
                 <div className="font-semibold text-neutral-900 text-sm mb-0.5">Email</div>
-                <div className="text-neutral-500 text-sm">Email coming soon</div>
+                <a href="mailto:rodentsexterminsulationllc@gmail.com" className="text-neutral-500 text-sm hover:text-brand-500 transition-colors duration-200">rodentsexterminsulationllc@gmail.com</a>
               </div>
             </div>
 
@@ -206,7 +272,6 @@ export default function Contact() {
             className={`lg:col-span-2 reveal-right reveal-delay-1 ${formColVisible ? 'reveal-visible' : ''}`}
           >
             <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 sm:p-8">
-              {/* Form heading */}
               {!submitted && (
                 <div className="mb-6 pb-6 border-b border-neutral-100">
                   <h3 className="font-bold text-neutral-900 text-lg mb-1">Or Submit A Request Online</h3>
@@ -228,7 +293,12 @@ export default function Contact() {
                       trackSubmitAnother();
                       setSubmitted(false);
                       hasEngagedRef.current = false;
-                      setForm({ name: '', phone: '', email: '', service: '', message: '' });
+                      formStartedAtRef.current = '';
+                      setForm({ name: '', phone: '', email: '', service: '', message: '', property_zip: '', bot_field: '' });
+                      setRecaptchaToken('');
+                      if (window.grecaptcha && recaptchaWidgetIdRef.current !== null) {
+                        window.grecaptcha.reset(recaptchaWidgetIdRef.current);
+                      }
                     }}
                   >
                     Submit another request
@@ -236,6 +306,20 @@ export default function Contact() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Honeypot field — hidden from real users, bots will fill it */}
+                  <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}>
+                    <label htmlFor="bot_field">Leave this field empty</label>
+                    <input
+                      id="bot_field"
+                      name="bot_field"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={form.bot_field}
+                      onChange={handleChange}
+                    />
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-sm font-semibold text-neutral-700 mb-2" htmlFor="name">
@@ -289,41 +373,81 @@ export default function Contact() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-neutral-700 mb-2" htmlFor="service">
-                      Service Needed <span className="text-red-400 font-normal">*</span>
-                    </label>
-                    <select
-                      id="service"
-                      name="service"
-                      required
-                      aria-required="true"
-                      value={form.service}
-                      onChange={handleChange}
-                      onFocus={handleFocus}
-                      className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-base sm:text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
-                    >
-                      <option value="">Select a service...</option>
-                      {services.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-700 mb-2" htmlFor="service">
+                        Service Needed <span className="text-red-400 font-normal">*</span>
+                      </label>
+                      <select
+                        id="service"
+                        name="service"
+                        required
+                        aria-required="true"
+                        value={form.service}
+                        onChange={handleChange}
+                        onFocus={handleFocus}
+                        className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-base sm:text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
+                      >
+                        <option value="">Select a service...</option>
+                        {services.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-700 mb-2" htmlFor="property_zip">
+                        Property ZIP Code <span className="text-red-400 font-normal">*</span>
+                      </label>
+                      <input
+                        id="property_zip"
+                        name="property_zip"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="\d{5}"
+                        maxLength={5}
+                        required
+                        aria-required="true"
+                        value={form.property_zip}
+                        onChange={handleChange}
+                        onFocus={handleFocus}
+                        placeholder="75001"
+                        className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-base sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition bg-neutral-50 hover:bg-white min-h-[48px]"
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-neutral-700 mb-2" htmlFor="message">
-                      Message
+                      Briefly describe what you are seeing, hearing, or experiencing at the property. <span className="text-red-400 font-normal">*</span>
                     </label>
                     <textarea
                       id="message"
                       name="message"
                       rows={4}
+                      required
+                      aria-required="true"
+                      minLength={10}
+                      maxLength={1500}
                       value={form.message}
                       onChange={handleChange}
                       onFocus={handleFocus}
-                      placeholder="Describe your situation or any questions you have about your attic..."
+                      placeholder="Describe what you are seeing, hearing, or experiencing at the property..."
                       className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-base sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition resize-none bg-neutral-50 hover:bg-white"
                     />
+                  </div>
+
+                  {/* reCAPTCHA v2 checkbox */}
+                  <div>
+                    <div ref={recaptchaContainerRef} className="min-h-[78px]" aria-label="Spam verification" />
+                    {!recaptchaReady && RECAPTCHA_SITE_KEY && (
+                      <p className="text-neutral-400 text-xs mt-1.5" role="status">Loading verification…</p>
+                    )}
+                    {recaptchaError && (
+                      <p className="text-red-500 text-sm mt-1.5" role="alert">Please complete the spam check to submit.</p>
+                    )}
+                    {!RECAPTCHA_SITE_KEY && (
+                      <p className="text-neutral-400 text-xs mt-1.5">Verification unavailable. Please call (972) 804-6456.</p>
+                    )}
                   </div>
 
                   {error && (

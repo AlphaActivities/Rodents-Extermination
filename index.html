@@ -15,6 +15,9 @@
       window.scrollTo(0, 0);
     </script>
 
+    <!-- Google reCAPTCHA v2 -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6X391M9KK7"></script>
     <script>
@@ -173,19 +176,6 @@
     </script>
   </head>
   <body>
-    <!-- Hidden form so Netlify's deploy-time scanner registers the form and its fields.
-         The React form POSTs to this name at runtime via the fetch handler. -->
-    <form name="contact" netlify netlify-honeypot="bot-field" hidden>
-      <input type="text" name="name" />
-      <input type="tel" name="phone" />
-      <input type="email" name="email" />
-      <input type="text" name="service_name" />
-      <textarea name="message"></textarea>
-      <input type="text" name="landing_page" />
-      <input type="text" name="page_path" />
-      <input type="text" name="referrer" />
-    </form>
-
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -2,7 +2,7 @@ import { Phone, Mail, MessageSquare as Sms, Clock } from 'lucide-react';
 import StatusBadge from '../components/StatusBadge';
 import { getUrgency } from '../components/urgency';
 
-export type LeadStatus = 'new' | 'contacted' | 'quoted' | 'closed' | 'archived';
+export type LeadStatus = 'new' | 'contacted' | 'inspection_scheduled' | 'quoted' | 'won' | 'lost' | 'closed' | 'archived';
 
 export interface Lead {
   id: number;
@@ -16,6 +16,17 @@ export interface Lead {
   page_path: string | null;
   referrer: string | null;
   status: LeadStatus;
+  property_zip?: string | null;
+  normalized_phone?: string | null;
+  quality?: string;
+  spam_score?: number;
+  spam_reasons?: string[];
+  duplicate_of?: string | null;
+  last_contacted_at?: string | null;
+  follow_up_at?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+  service_area_status?: string;
 }
 
 function formatDate(iso: string) {
