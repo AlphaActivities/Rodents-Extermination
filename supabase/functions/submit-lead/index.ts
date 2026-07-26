@@ -54,16 +54,24 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
 }
 
-function hashIp(ip: string, pepper: string): string {
+function getClientIp(req: Request): string {
+  const xff = req.headers.get("X-Forwarded-For");
+  if (xff) {
+    return xff.split(",")[0].trim();
+  }
+  const cfIp = req.headers.get("CF-Connecting-IP");
+  if (cfIp) {
+    return cfIp.trim();
+  }
+  return "unknown";
+}
+
+async function hashIp(ip: string, pepper: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(ip + ":" + pepper);
-  // Simple non-crypto hash — sufficient for rate-limit grouping
-  let h = 0x811c9dc5;
-  for (let i = 0; i < data.length; i++) {
-    h ^= data[i];
-    h = Math.imul(h, 0x01000193);
-  }
-  return (h >>> 0).toString(16);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 // ── Solicitation keywords ─────────────────────────────────────
@@ -86,6 +94,23 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Method not allowed" }, 405, origin);
   }
 
+  // ── Validate required server configuration ─────────────────
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const recaptchaSecret = Deno.env.get("RECAPTCHA_SECRET_KEY");
+  const ratePepper = Deno.env.get("RATE_LIMIT_PEPPER");
+
+  if (!supabaseUrl || !supabaseServiceKey || !recaptchaSecret || !ratePepper) {
+    const missing = [
+      !supabaseUrl && "SUPABASE_URL",
+      !supabaseServiceKey && "SUPABASE_SERVICE_ROLE_KEY",
+      !recaptchaSecret && "RECAPTCHA_SECRET_KEY",
+      !ratePepper && "RATE_LIMIT_PEPPER",
+    ].filter(Boolean).join(", ");
+    console.error(`Missing required environment variables: ${missing}`);
+    return json({ error: "Server configuration error" }, 500, origin);
+  }
+
   // Body size limit
   const contentLength = req.headers.get("Content-Length");
   if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
@@ -98,7 +123,11 @@ Deno.serve(async (req: Request) => {
     if (raw.length > MAX_BODY_BYTES) {
       return json({ error: "Request too large" }, 413, origin);
     }
-    payload = JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return json({ error: "Invalid request" }, 400, origin);
+    }
+    payload = parsed as Record<string, unknown>;
   } catch {
     return json({ error: "Invalid JSON" }, 400, origin);
   }
@@ -152,13 +181,54 @@ Deno.serve(async (req: Request) => {
     return json({ error: errors.join(" ") }, 422, origin);
   }
 
-  // ── reCAPTCHA verification ─────────────────────────────────
-  const recaptchaSecret = Deno.env.get("RECAPTCHA_SECRET_KEY");
-  if (!recaptchaSecret) {
-    console.error("RECAPTCHA_SECRET_KEY not configured");
-    return json({ error: "Server configuration error" }, 500, origin);
+  // ── Connect to Supabase with service role ──────────────────
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  // ── Rate limiting ───────────────────────────────────────────
+  const clientIp = getClientIp(req);
+  const ipHash = await hashIp(clientIp, ratePepper);
+
+  const oneHourAgo = new Date(Date.now() - 3_600_000).toISOString();
+  const twentyFourHoursAgo = new Date(Date.now() - 86_400_000).toISOString();
+
+  const { count: recentAccepted, error: hourErr } = await supabase
+    .from("lead_submission_attempts")
+    .select("id", { count: "exact", head: true })
+    .eq("ip_hash", ipHash)
+    .eq("accepted", true)
+    .gte("attempted_at", oneHourAgo);
+
+  if (hourErr) {
+    console.error("Rate-limit hourly check failed:", hourErr.code);
+    return json({ error: "Server error. Please try again later." }, 500, origin);
   }
 
+  const { count: recentTotal, error: dayErr } = await supabase
+    .from("lead_submission_attempts")
+    .select("id", { count: "exact", head: true })
+    .eq("ip_hash", ipHash)
+    .gte("attempted_at", twentyFourHoursAgo);
+
+  if (dayErr) {
+    console.error("Rate-limit daily check failed:", dayErr.code);
+    return json({ error: "Server error. Please try again later." }, 500, origin);
+  }
+
+  if ((recentAccepted ?? 0) >= 3 || (recentTotal ?? 0) >= 5) {
+    const reason = (recentAccepted ?? 0) >= 3 ? "rate_limit_hour" : "rate_limit_day";
+    const { error: attemptErr } = await supabase.from("lead_submission_attempts").insert({
+      ip_hash: ipHash,
+      accepted: false,
+      rejection_reason: reason,
+    });
+    if (attemptErr) {
+      console.error("Attempt record insert failed:", attemptErr.code);
+      return json({ error: "Server error. Please try again later." }, 500, origin);
+    }
+    return json({ error: "Submission rejected. Please try again later." }, 429, origin);
+  }
+
+  // ── reCAPTCHA v2 verification ──────────────────────────────
   let recaptchaOk = false;
   try {
     const verifyRes = await fetch("https://www.google.com/recaptcha/api/siteverify", {
@@ -169,6 +239,9 @@ Deno.serve(async (req: Request) => {
         response: recaptcha_token,
       }),
     });
+    if (!verifyRes.ok) {
+      throw new Error("reCAPTCHA HTTP error");
+    }
     const verifyData = await verifyRes.json() as {
       success: boolean;
       hostname?: string;
@@ -179,74 +252,54 @@ Deno.serve(async (req: Request) => {
     ];
     recaptchaOk =
       verifyData.success === true &&
-      (!verifyData.hostname || validHostnames.includes(verifyData.hostname));
+      typeof verifyData.hostname === "string" &&
+      validHostnames.includes(verifyData.hostname);
   } catch {
     recaptchaOk = false;
   }
 
-  // ── Connect to Supabase with service role ──────────────────
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
-
-  // ── Rate limiting ───────────────────────────────────────────
-  const clientIp = req.headers.get("X-Forwarded-For")?.split(",")[0]?.trim() || "unknown";
-  const ratePepper = Deno.env.get("RATE_LIMIT_PEPPER") || "fallback-pepper";
-  const ipHash = hashIp(clientIp, ratePepper);
-
-  const oneHourAgo = new Date(Date.now() - 3_600_000).toISOString();
-  const twentyFourHoursAgo = new Date(Date.now() - 86_400_000).toISOString();
-
-  const { count: recentAccepted } = await supabase
-    .from("lead_submission_attempts")
-    .select("id", { count: "exact", head: true })
-    .eq("ip_hash", ipHash)
-    .eq("accepted", true)
-    .gte("attempted_at", oneHourAgo);
-
-  const { count: recentTotal } = await supabase
-    .from("lead_submission_attempts")
-    .select("id", { count: "exact", head: true })
-    .eq("ip_hash", ipHash)
-    .gte("attempted_at", twentyFourHoursAgo);
-
-  let rejectionReason: string | null = null;
-
-  if ((recentAccepted ?? 0) >= 3) {
-    rejectionReason = "rate_limit_hour";
-  } else if ((recentTotal ?? 0) >= 5) {
-    rejectionReason = "rate_limit_day";
-  } else if (!recaptchaOk) {
-    rejectionReason = "recaptcha_failed";
+  if (!recaptchaOk) {
+    const { error: attemptErr } = await supabase.from("lead_submission_attempts").insert({
+      ip_hash: ipHash,
+      accepted: false,
+      rejection_reason: "recaptcha_failed",
+    });
+    if (attemptErr) {
+      console.error("Attempt record insert failed:", attemptErr.code);
+      return json({ error: "Server error. Please try again later." }, 500, origin);
+    }
+    return json({ error: "Spam verification failed. Please try again." }, 403, origin);
   }
 
   // ── Duplicate detection ────────────────────────────────────
   let duplicateOf: string | null = null;
   let isDuplicate = false;
 
-  if (!rejectionReason) {
-    const twentyFourHrsAgo = new Date(Date.now() - 86_400_000).toISOString();
-    const { data: recentLeads } = await supabase
-      .from("leads")
-      .select("id, normalized_phone, email, message")
-      .gte("created_at", twentyFourHrsAgo);
+  const twentyFourHrsAgo = new Date(Date.now() - 86_400_000).toISOString();
+  const { data: recentLeads, error: dupErr } = await supabase
+    .from("leads")
+    .select("id, normalized_phone, email, message")
+    .gte("created_at", twentyFourHrsAgo);
 
-    if (recentLeads && recentLeads.length > 0) {
-      for (const rl of recentLeads) {
-        const phoneMatch = rl.normalized_phone && rl.normalized_phone === normalizedPhone;
-        const emailMatch = email && rl.email && rl.email.toLowerCase() === email;
-        const messageMatch =
-          rl.message && message &&
-          rl.message.length > 20 &&
-          (rl.message === message ||
-            (rl.message.includes(message) || message.includes(rl.message)));
-        if (phoneMatch || emailMatch) {
-          if (phoneMatch && (emailMatch || messageMatch)) {
-            isDuplicate = true;
-            duplicateOf = rl.id;
-            break;
-          }
+  if (dupErr) {
+    console.error("Duplicate detection query failed:", dupErr.code);
+    return json({ error: "Server error. Please try again later." }, 500, origin);
+  }
+
+  if (recentLeads && recentLeads.length > 0) {
+    for (const rl of recentLeads) {
+      const phoneMatch = rl.normalized_phone && rl.normalized_phone === normalizedPhone;
+      const emailMatch = email && rl.email && rl.email.toLowerCase() === email;
+      const messageMatch =
+        rl.message && message &&
+        rl.message.length > 20 &&
+        (rl.message === message ||
+          (rl.message.includes(message) || message.includes(rl.message)));
+      if (phoneMatch || emailMatch) {
+        if (phoneMatch && (emailMatch || messageMatch)) {
+          isDuplicate = true;
+          duplicateOf = rl.id;
+          break;
         }
       }
     }
@@ -255,11 +308,6 @@ Deno.serve(async (req: Request) => {
   // ── Quality scoring ─────────────────────────────────────────
   const spamReasons: string[] = [];
   let spamScore = 0;
-
-  if (!recaptchaOk) {
-    spamReasons.push("recaptcha_failed");
-    spamScore += 30;
-  }
 
   // Timing signal
   let elapsedSeconds: number | null = null;
@@ -314,7 +362,7 @@ Deno.serve(async (req: Request) => {
 
   // ── Determine quality ──────────────────────────────────────
   let quality: Quality;
-  if (rejectionReason === "recaptcha_failed" || spamScore >= 60) {
+  if (spamScore >= 60) {
     quality = "spam";
   } else if (isDuplicate) {
     quality = "duplicate";
@@ -328,16 +376,16 @@ Deno.serve(async (req: Request) => {
     quality = "likely_customer";
   }
 
-  // ── Record attempt ─────────────────────────────────────────
-  const accepted = !rejectionReason;
-  await supabase.from("lead_submission_attempts").insert({
+  // ── Record accepted attempt ────────────────────────────────
+  const { error: attemptErr } = await supabase.from("lead_submission_attempts").insert({
     ip_hash: ipHash,
-    accepted,
-    rejection_reason: rejectionReason,
+    accepted: true,
+    rejection_reason: null,
   });
 
-  if (rejectionReason) {
-    return json({ error: "Submission rejected. Please try again later." }, 429, origin);
+  if (attemptErr) {
+    console.error("Attempt record insert failed:", attemptErr.code);
+    return json({ error: "Server error. Please try again later." }, 500, origin);
   }
 
   // ── Insert lead (service role bypasses RLS) ─────────────────
