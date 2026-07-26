@@ -96,14 +96,14 @@ Deno.serve(async (req: Request) => {
 
   // ── Validate required server configuration ─────────────────
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const recaptchaSecret = Deno.env.get("RECAPTCHA_SECRET_KEY");
   const ratePepper = Deno.env.get("RATE_LIMIT_PEPPER");
 
-  if (!supabaseUrl || !supabaseServiceKey || !recaptchaSecret || !ratePepper) {
+  if (!supabaseUrl || !serviceRoleKey || !recaptchaSecret || !ratePepper) {
     const missing = [
       !supabaseUrl && "SUPABASE_URL",
-      !supabaseServiceKey && "SUPABASE_SERVICE_ROLE_KEY",
+      !serviceRoleKey && "SUPABASE_SERVICE_ROLE_KEY",
       !recaptchaSecret && "RECAPTCHA_SECRET_KEY",
       !ratePepper && "RATE_LIMIT_PEPPER",
     ].filter(Boolean).join(", ");
@@ -182,7 +182,10 @@ Deno.serve(async (req: Request) => {
   }
 
   // ── Connect to Supabase with service role ──────────────────
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const supabase = createClient(
+    supabaseUrl,
+    serviceRoleKey,
+  );
 
   // ── Rate limiting ───────────────────────────────────────────
   const clientIp = getClientIp(req);
