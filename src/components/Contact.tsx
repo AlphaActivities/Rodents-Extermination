@@ -30,7 +30,9 @@ declare global {
   }
 }
 
-const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY as string;
+const RECAPTCHA_SITE_KEY =
+  import.meta.env.VITE_RECAPTCHA_SITE_KEY?.trim() ||
+  "6Ldjp2UtAAAAAFJMzHI9opmvgzzozJKKvbvzGoX9";
 
 const services = [
   'Attic Insulation',
