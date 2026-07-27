@@ -428,11 +428,7 @@ Deno.serve(async (req: Request) => {
       message,
       property_zip,
       landing_page,
-      page_path,
-      referrer,
-      quality,
       spam_score: String(spamScore),
-      service_area_status: serviceAreaStatus,
     });
 
     const netlifyRes = await fetch("https://rodentsextermandinsulationllc.com/", {
