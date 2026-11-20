@@ -84,6 +84,13 @@ function getNextAction(lead: Lead): NextAction {
         bg: 'rgba(245,158,11,0.08)',
         border: 'rgba(245,158,11,0.18)',
       };
+    case 'inspection_scheduled':
+      return {
+        text: 'Confirm the inspection appointment',
+        color: '#5eead4',
+        bg: 'rgba(20,184,166,0.15)',
+        border: 'rgba(20,184,166,0.28)',
+      };
     case 'quoted':
       return {
         text: 'Check quote outcome',
@@ -91,13 +98,15 @@ function getNextAction(lead: Lead): NextAction {
         bg: 'rgba(37,99,235,0.08)',
         border: 'rgba(37,99,235,0.18)',
       };
-    case 'closed':
+    case 'won':
       return {
-        text: 'Job completed / won',
+        text: 'Confirm the job start date',
         color: 'var(--db-success)',
         bg: 'rgba(16,185,129,0.08)',
         border: 'rgba(16,185,129,0.18)',
       };
+    case 'lost':
+    case 'closed':
     case 'archived':
       return {
         text: 'No active action needed',
@@ -152,7 +161,7 @@ function DetailRow({ icon: Icon, label, value, breakAll }: DetailRowProps) {
 
 // ── status selector ──────────────────────────────────────────
 
-const STATUS_ORDER: LeadStatus[] = ['new', 'contacted', 'quoted', 'closed', 'archived'];
+const STATUS_ORDER: LeadStatus[] = ['new', 'contacted', 'inspection_scheduled', 'quoted', 'won', 'lost', 'closed', 'archived'];
 
 interface StatusSelectorProps {
   current: LeadStatus;
@@ -213,10 +222,60 @@ interface Props {
   lead: Lead | null;
   onClose: () => void;
   onStatusChange: (id: number, status: LeadStatus) => void;
+  onFollowUpChange: (id: number, followUp: string | null) => void;
   adminName: string;
 }
 
-export default function LeadDrawer({ lead, onClose, onStatusChange, adminName }: Props) {
+function FollowUpEditor({ lead, onSave }: {
+  lead: Lead;
+  onSave: (id: number, followUp: string | null) => void;
+}) {
+  const [value, setValue] = useState(() => {
+    if (!lead.follow_up_at) return '';
+    const date = new Date(lead.follow_up_at);
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(false);
+
+  async function save() {
+    const followUp = value ? new Date(value).toISOString() : null;
+    setSaving(true);
+    setError(false);
+    try {
+      const result = await supabase.from('leads')
+        .update({ follow_up_at: followUp }, { count: 'exact' })
+        .eq('id', lead.id);
+      if (result.error || result.count !== 1) {
+        setError(true);
+        return;
+      }
+      onSave(lead.id, followUp);
+    } catch {
+      setError(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form className="mb-6" onSubmit={(event) => { event.preventDefault(); void save(); }}>
+      <label className="block mb-2 text-sm" htmlFor="lead-follow-up">Follow up (device time)</label>
+      <div className="flex flex-wrap gap-2">
+        <input id="lead-follow-up" className="db-input" type="datetime-local" value={value}
+          onChange={(event) => setValue(event.target.value)} disabled={saving} />
+        <button className="db-chip" type="submit" disabled={saving}>
+          {saving ? 'Saving…' : 'Save follow up'}
+        </button>
+      </div>
+      {error && <p role="alert" className="mt-2 text-sm" style={{ color: 'var(--db-error)' }}>
+        Follow up could not be saved.
+      </p>}
+    </form>
+  );
+}
+
+export default function LeadDrawer({ lead, onClose, onStatusChange, onFollowUpChange, adminName }: Props) {
   const drawerRef = useRef<HTMLDivElement>(null);
   const isOpen = lead !== null;
 
@@ -418,6 +477,8 @@ export default function LeadDrawer({ lead, onClose, onStatusChange, adminName }:
                   onChange={handleStatusChange}
                 />
               </div>
+
+              <FollowUpEditor key={lead.id} lead={lead} onSave={onFollowUpChange} />
 
               {/* Contact details */}
               <div className="mb-6">

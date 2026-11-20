@@ -54,7 +54,7 @@ const CARDS: Array<{
     icon: Activity,
     accentColor: '#34d399',
     accentSoft: 'rgba(52,211,153,0.14)',
-    helpText: 'Called · inspection or quote pending',
+    helpText: 'Inspection scheduled or quote sent',
     zeroHelpText: 'No jobs in progress',
   },
   {
@@ -64,31 +64,35 @@ const CARDS: Array<{
     icon: Bell,
     accentColor: '#c084fc',
     accentSoft: 'rgba(168,85,247,0.14)',
-    helpText: 'Quote delivered · awaiting decision',
-    zeroHelpText: 'No quotes pending',
+    helpText: 'Scheduled follow ups due',
+    zeroHelpText: 'No follow ups due',
   },
 ];
 
-export function computeStats(leads: Lead[]): Stats {
+export function computeStats(leads: Lead[], now: number): Stats {
   return {
-    total: leads.filter((l) => l.status !== 'closed' && l.status !== 'archived').length,
-    today: leads.filter((l) => l.status === 'new').length,
-    pipeline: leads.filter((l) => l.status === 'contacted').length,
-    followUp: leads.filter((l) => l.status === 'quoted').length,
+    total: applyFilter(leads, 'all', now).length,
+    today: applyFilter(leads, 'today', now).length,
+    pipeline: applyFilter(leads, 'pipeline', now).length,
+    followUp: applyFilter(leads, 'follow_up', now).length,
   };
 }
 
-export function applyFilter(leads: Lead[], filter: FilterKey): Lead[] {
+export function applyFilter(leads: Lead[], filter: FilterKey, now: number): Lead[] {
   switch (filter) {
     case 'today':
       return leads.filter((l) => l.status === 'new');
     case 'pipeline':
-      return leads.filter((l) => l.status === 'contacted');
+      return leads.filter((l) => l.status === 'inspection_scheduled' || l.status === 'quoted');
     case 'follow_up':
-      return leads.filter((l) => l.status === 'quoted');
+      return leads.filter((lead) =>
+        lead.follow_up_at &&
+        Date.parse(lead.follow_up_at) <= now &&
+        !['closed', 'archived', 'lost', 'won'].includes(lead.status)
+      );
     case 'all':
     default:
-      return leads.filter((l) => l.status !== 'closed' && l.status !== 'archived');
+      return leads.filter((l) => !['closed', 'archived', 'lost'].includes(l.status));
   }
 }
 

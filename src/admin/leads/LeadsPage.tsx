@@ -25,7 +25,10 @@ const STATUS_CHIPS: Array<{ key: StatusChip; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'new', label: 'New' },
   { key: 'contacted', label: 'Contacted' },
+  { key: 'inspection_scheduled', label: 'Inspection Scheduled' },
   { key: 'quoted', label: 'Quoted' },
+  { key: 'won', label: 'Won' },
+  { key: 'lost', label: 'Lost' },
   { key: 'closed', label: 'Closed' },
   { key: 'archived', label: 'Archived' },
 ];
@@ -55,6 +58,12 @@ export default function LeadsPage() {
   const [statusChip, setStatusChip] = useState<StatusChip>('all');
   const [search, setSearch] = useState('');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [now, setNow] = useState(Date.now);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -62,7 +71,7 @@ export default function LeadsPage() {
     const { data, error: err } = await supabase
       .from('leads')
       .select(
-        'id, created_at, name, phone, email, service_name, message, landing_page, page_path, referrer, status'
+        'id, created_at, name, phone, email, service_name, message, landing_page, page_path, referrer, status, follow_up_at'
       )
       .order('created_at', { ascending: false });
     if (err) {
@@ -93,6 +102,12 @@ export default function LeadsPage() {
     fetchLeads();
   }, [fetchLeads]);
 
+  const handleFollowUpChange = useCallback((id: number, follow_up_at: string | null) => {
+    setLeads((previous) => previous.map((lead) => lead.id === id ? { ...lead, follow_up_at } : lead));
+    setSelectedLead((previous) => previous?.id === id ? { ...previous, follow_up_at } : previous);
+    setNow(Date.now());
+  }, []);
+
   // worklist = non-archived; used as base for non-archived chip paths
   const worklist = useMemo(
     () => leads.filter((l) => l.status !== 'archived'),
@@ -100,7 +115,7 @@ export default function LeadsPage() {
   );
 
   // computeStats now receives all leads and self-filters per tile definition
-  const stats = useMemo(() => computeStats(leads), [leads]);
+  const stats = useMemo(() => computeStats(leads, now), [leads, now]);
 
   // Model D: chips and tiles are separate control modes — only one is active at a time.
   // Chip active → bypass tile filter entirely, show exact status from correct base.
@@ -111,13 +126,13 @@ export default function LeadsPage() {
       const base = statusChip === 'archived' ? leads : worklist;
       result = base.filter((l) => l.status === statusChip);
     } else {
-      result = applyFilter(worklist, activeFilter);
+      result = applyFilter(worklist, activeFilter, now);
     }
     if (search.trim()) {
       result = result.filter((l) => matchesSearch(l, search));
     }
     return result;
-  }, [leads, worklist, activeFilter, statusChip, search]);
+  }, [leads, worklist, activeFilter, statusChip, search, now]);
 
   // Tile click resets chip to 'all'; clicking the same tile again deactivates it
   const handleFilterChange = useCallback((key: FilterKey) => {
@@ -370,6 +385,7 @@ export default function LeadsPage() {
         lead={selectedLead}
         onClose={() => setSelectedLead(null)}
         onStatusChange={handleStatusChange}
+        onFollowUpChange={handleFollowUpChange}
         adminName={adminName}
       />
     </>

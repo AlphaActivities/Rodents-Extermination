@@ -20,11 +20,29 @@ export const STATUS_CONFIG: Record<LeadStatus, Config> = {
     bg: 'rgba(245,158,11,0.15)',
     border: 'rgba(245,158,11,0.28)',
   },
+  inspection_scheduled: {
+    label: 'Inspection Scheduled',
+    color: '#5eead4',
+    bg: 'rgba(20,184,166,0.15)',
+    border: 'rgba(20,184,166,0.28)',
+  },
   quoted: {
     label: 'Quoted',
     color: '#c084fc',
     bg: 'rgba(168,85,247,0.15)',
     border: 'rgba(168,85,247,0.28)',
+  },
+  won: {
+    label: 'Won',
+    color: '#34d399',
+    bg: 'rgba(52,211,153,0.15)',
+    border: 'rgba(52,211,153,0.28)',
+  },
+  lost: {
+    label: 'Lost',
+    color: '#fca5a5',
+    bg: 'rgba(239,68,68,0.15)',
+    border: 'rgba(239,68,68,0.28)',
   },
   closed: {
     label: 'Closed',

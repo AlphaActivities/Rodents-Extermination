@@ -1,25 +1,16 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-// ── CORS ──────────────────────────────────────────────────────
+// ============================================================
+// Configuration
+// ============================================================
+
 const ALLOWED_ORIGINS = [
-  "https://rodentsexterminsulationllc.com",
-  "https://www.rodentsexterminsulationllc.com",
+  "https://rodentsextermandinsulationllc.com",
+  "https://www.rodentsextermandinsulationllc.com",
+  "https://bolt.new",
   "http://localhost:5173",
-];
+] as const;
 
-function corsHeaders(origin: string | null): Record<string, string> {
-  const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : "";
-  return {
-    "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-    "Vary": "Origin",
-  };
-}
-
-const MAX_BODY_BYTES = 16_384;
-
-// ── Approved service values (must match Contact.tsx) ──────────
 const APPROVED_SERVICES = [
   "Attic Insulation",
   "Radiant Barrier",
@@ -30,7 +21,33 @@ const APPROVED_SERVICES = [
   "Other / General Inquiry",
 ] as const;
 
-// ── Quality classes ───────────────────────────────────────────
+const VALID_RECAPTCHA_HOSTNAMES = [
+  "rodentsextermandinsulationllc.com",
+  "www.rodentsextermandinsulationllc.com",
+  "bolt.new",
+] as const;
+
+const SOLICITATION_TERMS = [
+  "ai agent",
+  "ai employee",
+  "seo services",
+  "marketing services",
+  "website services",
+  "lead generation",
+  "promotional song",
+  "sell you",
+  "grow your business",
+  "outsourcing",
+  "backlink",
+  "guest post",
+  "content writing",
+  "digital marketing",
+] as const;
+
+const MAX_BODY_BYTES = 16_384;
+const MAX_ACCEPTED_PER_HOUR = 3;
+const MAX_ACCEPTED_PER_DAY = 5;
+
 type Quality =
   | "likely_customer"
   | "needs_review"
@@ -39,340 +56,793 @@ type Quality =
   | "duplicate"
   | "out_of_area";
 
-// ── Helpers ───────────────────────────────────────────────────
-function json(body: unknown, status: number, origin: string | null) {
+type ServiceAreaStatus =
+  | "inside"
+  | "bordering"
+  | "outside"
+  | "unknown";
+
+type PublicPayload = {
+  name?: unknown;
+  phone?: unknown;
+  email?: unknown;
+  service_name?: unknown;
+  message?: unknown;
+  property_zip?: unknown;
+  landing_page?: unknown;
+  page_path?: unknown;
+  referrer?: unknown;
+  recaptcha_token?: unknown;
+  bot_field?: unknown;
+  form_started_at?: unknown;
+};
+
+// ============================================================
+// Response and CORS helpers
+// ============================================================
+
+function corsHeaders(origin: string | null): Record<string, string> {
+  const allowedOrigin =
+    origin &&
+    ALLOWED_ORIGINS.includes(origin as (typeof ALLOWED_ORIGINS)[number])
+      ? origin
+      : "";
+
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers":
+      "Content-Type, Authorization, X-Client-Info, Apikey",
+    "Vary": "Origin",
+  };
+}
+
+function jsonResponse(
+  body: unknown,
+  status: number,
+  origin: string | null,
+): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
+    headers: {
+      ...corsHeaders(origin),
+      "Content-Type": "application/json",
+    },
   });
 }
+
+// ============================================================
+// Validation and normalization helpers
+// ============================================================
 
 function normalizePhone(raw: string): string {
   return raw.replace(/\D/g, "");
 }
 
 function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+  return (
+    email.length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  );
 }
 
 function getClientIp(req: Request): string {
-  const xff = req.headers.get("X-Forwarded-For");
-  if (xff) {
-    return xff.split(",")[0].trim();
+  const forwardedFor = req.headers.get("x-forwarded-for");
+
+  if (forwardedFor) {
+    const firstAddress = forwardedFor.split(",")[0]?.trim();
+
+    if (firstAddress) {
+      return firstAddress;
+    }
   }
-  const cfIp = req.headers.get("CF-Connecting-IP");
-  if (cfIp) {
-    return cfIp.trim();
-  }
-  return "unknown";
+
+  const cloudflareAddress = req.headers
+    .get("cf-connecting-ip")
+    ?.trim();
+
+  return cloudflareAddress || "unknown";
 }
 
-async function hashIp(ip: string, pepper: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(ip + ":" + pepper);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+async function hashIp(
+  ip: string,
+  pepper: string,
+): Promise<string> {
+  const data = new TextEncoder().encode(`${ip}:${pepper}`);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
-// ── Solicitation keywords ─────────────────────────────────────
-const SOLICITATION_TERMS = [
-  "ai agent", "ai employee", "seo services", "marketing services",
-  "website services", "lead generation", "demo", "promotional song",
-  "sell you", "grow your business", "outsourcing", "backlink",
-  "guest post", "content writing", "digital marketing",
-];
+const NETLIFY_FORM_NAME = "contact";
+const NETLIFY_FORM_ENDPOINT =
+  "https://rodentsextermandinsulationllc.com/";
 
-// ── Main ──────────────────────────────────────────────────────
-Deno.serve(async (req: Request) => {
-  const origin = req.headers.get("Origin");
+type NetlifyMirrorInput = {
+  name: string;
+  phone: string;
+  email: string;
+  serviceName: string;
+  message: string;
+  propertyZip: string;
+  landingPage: string;
+  pagePath: string;
+  referrer: string;
+  quality: Quality;
+  spamScore: number;
+  serviceAreaStatus: ServiceAreaStatus;
+};
+
+async function sendNetlifyMirror(
+  input: NetlifyMirrorInput,
+): Promise<void> {
+  const body = new URLSearchParams({
+    "form-name": NETLIFY_FORM_NAME,
+    name: input.name,
+    phone: input.phone,
+    email: input.email,
+    service_name: input.serviceName,
+    message: input.message,
+    property_zip: input.propertyZip,
+    landing_page: input.landingPage,
+    page_path: input.pagePath,
+    referrer: input.referrer,
+    quality: input.quality,
+    spam_score: String(input.spamScore),
+    service_area_status: input.serviceAreaStatus,
+  });
+
+  try {
+    const response = await fetch(NETLIFY_FORM_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: body.toString(),
+    });
+
+    if (response.ok) {
+      console.log("Netlify notification mirror sent");
+      return;
+    }
+
+    console.error(
+      `Netlify notification mirror failed: ${response.status}`,
+    );
+  } catch (error) {
+    console.error(
+      "Netlify notification mirror failed: request_error",
+      error instanceof Error ? error.message : "unknown_error",
+    );
+  }
+}
+
+// ============================================================
+// Main function
+// ============================================================
+
+Deno.serve(async (req: Request): Promise<Response> => {
+  const origin = req.headers.get("origin");
 
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders(origin) });
+    return new Response(null, {
+      status: 200,
+      headers: corsHeaders(origin),
+    });
   }
 
   if (req.method !== "POST") {
-    return json({ error: "Method not allowed" }, 405, origin);
+    return jsonResponse(
+      { error: "Method not allowed" },
+      405,
+      origin,
+    );
   }
 
-  // ── Validate required server configuration ─────────────────
+  // ----------------------------------------------------------
+  // Required server environment
+  // ----------------------------------------------------------
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const recaptchaSecret = Deno.env.get("RECAPTCHA_SECRET_KEY");
-  const ratePepper = Deno.env.get("RATE_LIMIT_PEPPER");
+  const serviceRoleKey = Deno.env.get(
+    "SUPABASE_SERVICE_ROLE_KEY",
+  );
+  const recaptchaSecret = Deno.env.get(
+    "RECAPTCHA_SECRET_KEY",
+  );
+  const rateLimitPepper = Deno.env.get(
+    "RATE_LIMIT_PEPPER",
+  );
 
-  if (!supabaseUrl || !serviceRoleKey || !recaptchaSecret || !ratePepper) {
-    const missing = [
-      !supabaseUrl && "SUPABASE_URL",
-      !serviceRoleKey && "SUPABASE_SERVICE_ROLE_KEY",
-      !recaptchaSecret && "RECAPTCHA_SECRET_KEY",
-      !ratePepper && "RATE_LIMIT_PEPPER",
-    ].filter(Boolean).join(", ");
-    console.error(`Missing required environment variables: ${missing}`);
-    return json({ error: "Server configuration error" }, 500, origin);
-  }
+  const missingVariables: string[] = [];
 
-  // Body size limit
-  const contentLength = req.headers.get("Content-Length");
-  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
-    return json({ error: "Request too large" }, 413, origin);
+  if (!supabaseUrl) {
+    missingVariables.push("SUPABASE_URL");
   }
 
-  let payload: Record<string, unknown>;
-  try {
-    const raw = await req.text();
-    if (raw.length > MAX_BODY_BYTES) {
-      return json({ error: "Request too large" }, 413, origin);
-    }
-    const parsed = JSON.parse(raw);
-    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return json({ error: "Invalid request" }, 400, origin);
-    }
-    payload = parsed as Record<string, unknown>;
-  } catch {
-    return json({ error: "Invalid JSON" }, 400, origin);
+  if (!serviceRoleKey) {
+    missingVariables.push("SUPABASE_SERVICE_ROLE_KEY");
   }
 
-  // ── Parse allowlist only ────────────────────────────────────
-  const name = String(payload.name ?? "").trim();
-  const phone = String(payload.phone ?? "").trim();
-  const email = String(payload.email ?? "").trim().toLowerCase();
-  const service_name = String(payload.service_name ?? "").trim();
-  const message = String(payload.message ?? "").trim();
-  const property_zip = String(payload.property_zip ?? "").trim();
-  const landing_page = String(payload.landing_page ?? "").trim().slice(0, 2048);
-  const page_path = String(payload.page_path ?? "").trim().slice(0, 512);
-  const referrer = String(payload.referrer ?? "").trim().slice(0, 2048);
-  const recaptcha_token = String(payload.recaptcha_token ?? "").trim();
-  const bot_field = String(payload.bot_field ?? "").trim();
-  const form_started_at = payload.form_started_at;
-
-  // ── Honeypot ────────────────────────────────────────────────
-  if (bot_field) {
-    return json({ error: "Submission rejected" }, 422, origin);
+  if (!recaptchaSecret) {
+    missingVariables.push("RECAPTCHA_SECRET_KEY");
   }
 
-  // ── Field validation ───────────────────────────────────────
-  const errors: string[] = [];
-
-  if (name.length < 2 || name.length > 80) {
-    errors.push("Please enter your name (2–80 characters).");
-  }
-  const normalizedPhone = normalizePhone(phone);
-  if (normalizedPhone.length < 10 || normalizedPhone.length > 11) {
-    errors.push("Please enter a valid US phone number.");
-  }
-  if (email && !isValidEmail(email)) {
-    errors.push("Please enter a valid email address.");
-  }
-  if (!APPROVED_SERVICES.includes(service_name as typeof APPROVED_SERVICES[number])) {
-    errors.push("Please select a service.");
-  }
-  if (message.length < 10 || message.length > 1500) {
-    errors.push("Please describe your problem (10–1500 characters).");
-  }
-  if (!/^\d{5}$/.test(property_zip)) {
-    errors.push("Please enter a valid 5-digit ZIP code.");
-  }
-  if (!recaptcha_token) {
-    errors.push("Please complete the spam check.");
+  if (!rateLimitPepper) {
+    missingVariables.push("RATE_LIMIT_PEPPER");
   }
 
-  if (errors.length > 0) {
-    return json({ error: errors.join(" ") }, 422, origin);
+  if (missingVariables.length > 0) {
+    console.error(
+      `Missing required environment variables: ${missingVariables.join(", ")}`,
+    );
+
+    return jsonResponse(
+      { error: "Server configuration error" },
+      500,
+      origin,
+    );
   }
 
-  // ── Connect to Supabase with service role ──────────────────
   const supabase = createClient(
     supabaseUrl,
     serviceRoleKey,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    },
   );
 
-  // ── Rate limiting ───────────────────────────────────────────
+  // ----------------------------------------------------------
+  // Body-size validation
+  // ----------------------------------------------------------
+
+  const contentLengthHeader = req.headers.get(
+    "content-length",
+  );
+
+  if (contentLengthHeader) {
+    const contentLength = Number.parseInt(
+      contentLengthHeader,
+      10,
+    );
+
+    if (
+      Number.isFinite(contentLength) &&
+      contentLength > MAX_BODY_BYTES
+    ) {
+      return jsonResponse(
+        { error: "Request too large" },
+        413,
+        origin,
+      );
+    }
+  }
+
+  let parsedPayload: unknown;
+
+  try {
+    const rawBody = await req.text();
+
+    if (
+      new TextEncoder().encode(rawBody).byteLength >
+      MAX_BODY_BYTES
+    ) {
+      return jsonResponse(
+        { error: "Request too large" },
+        413,
+        origin,
+      );
+    }
+
+    parsedPayload = JSON.parse(rawBody);
+  } catch {
+    return jsonResponse(
+      { error: "Invalid JSON" },
+      400,
+      origin,
+    );
+  }
+
+  if (
+    parsedPayload === null ||
+    typeof parsedPayload !== "object" ||
+    Array.isArray(parsedPayload)
+  ) {
+    return jsonResponse(
+      { error: "Invalid request body" },
+      400,
+      origin,
+    );
+  }
+
+  const payload = parsedPayload as PublicPayload;
+
+  // ----------------------------------------------------------
+  // Parse only approved public fields
+  // ----------------------------------------------------------
+
+  const name = String(payload.name ?? "").trim();
+  const phone = String(payload.phone ?? "").trim();
+  const email = String(payload.email ?? "")
+    .trim()
+    .toLowerCase();
+
+  const serviceName = String(
+    payload.service_name ?? "",
+  ).trim();
+
+  const message = String(payload.message ?? "").trim();
+
+  const propertyZip = String(
+    payload.property_zip ?? "",
+  ).trim();
+
+  const landingPage = String(
+    payload.landing_page ?? "",
+  )
+    .trim()
+    .slice(0, 2048);
+
+  const pagePath = String(payload.page_path ?? "")
+    .trim()
+    .slice(0, 512);
+
+  const referrer = String(payload.referrer ?? "")
+    .trim()
+    .slice(0, 2048);
+
+  const recaptchaToken = String(
+    payload.recaptcha_token ?? "",
+  ).trim();
+
+  const botField = String(
+    payload.bot_field ?? "",
+  ).trim();
+
+  const formStartedAt = payload.form_started_at;
+
+  // ----------------------------------------------------------
+  // Honeypot
+  // ----------------------------------------------------------
+
+  if (botField) {
+    return jsonResponse(
+      { error: "Submission rejected" },
+      422,
+      origin,
+    );
+  }
+
+  // ----------------------------------------------------------
+  // Public-field validation
+  // ----------------------------------------------------------
+
+  const validationErrors: string[] = [];
+  const normalizedPhone = normalizePhone(phone);
+
+  if (name.length < 2 || name.length > 80) {
+    validationErrors.push(
+      "Please enter your name (2–80 characters).",
+    );
+  }
+
+  if (
+    normalizedPhone.length < 10 ||
+    normalizedPhone.length > 11
+  ) {
+    validationErrors.push(
+      "Please enter a valid US phone number.",
+    );
+  }
+
+  if (email && !isValidEmail(email)) {
+    validationErrors.push(
+      "Please enter a valid email address.",
+    );
+  }
+
+  if (
+    !APPROVED_SERVICES.includes(
+      serviceName as (typeof APPROVED_SERVICES)[number],
+    )
+  ) {
+    validationErrors.push("Please select a service.");
+  }
+
+  if (message.length < 10 || message.length > 1500) {
+    validationErrors.push(
+      "Please describe your problem (10–1500 characters).",
+    );
+  }
+
+  if (!/^\d{5}$/.test(propertyZip)) {
+    validationErrors.push(
+      "Please enter a valid 5-digit ZIP code.",
+    );
+  }
+
+  if (!recaptchaToken) {
+    validationErrors.push(
+      "Please complete the spam check.",
+    );
+  }
+
+  if (validationErrors.length > 0) {
+    return jsonResponse(
+      { error: validationErrors.join(" ") },
+      422,
+      origin,
+    );
+  }
+
+  // ----------------------------------------------------------
+  // Verify Google reCAPTCHA v2
+  // ----------------------------------------------------------
+
+  let recaptchaVerified = false;
+
+  try {
+    const verificationResponse = await fetch(
+      "https://www.google.com/recaptcha/api/siteverify",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          secret: recaptchaSecret,
+          response: recaptchaToken,
+        }),
+      },
+    );
+
+    if (verificationResponse.ok) {
+      const verificationData =
+        await verificationResponse.json() as {
+          success?: unknown;
+          hostname?: unknown;
+        };
+
+      recaptchaVerified =
+        verificationData.success === true &&
+        typeof verificationData.hostname === "string" &&
+        VALID_RECAPTCHA_HOSTNAMES.includes(
+          verificationData.hostname as
+            (typeof VALID_RECAPTCHA_HOSTNAMES)[number],
+        );
+    }
+  } catch {
+    console.error(
+      "reCAPTCHA verification request failed",
+    );
+  }
+
+  // ----------------------------------------------------------
+  // Create privacy-preserving rate-limit key
+  // ----------------------------------------------------------
+
   const clientIp = getClientIp(req);
-  const ipHash = await hashIp(clientIp, ratePepper);
+  const ipHash = await hashIp(
+    clientIp,
+    rateLimitPepper,
+  );
 
-  const oneHourAgo = new Date(Date.now() - 3_600_000).toISOString();
-  const twentyFourHoursAgo = new Date(Date.now() - 86_400_000).toISOString();
+  async function recordAttempt(
+    accepted: boolean,
+    rejectionReason: string | null,
+  ): Promise<string | null> {
+    const { data, error } = await supabase
+      .from("lead_submission_attempts")
+      .insert({
+        ip_hash: ipHash,
+        accepted,
+        rejection_reason: rejectionReason,
+      })
+      .select("id")
+      .single();
 
-  const { count: recentAccepted, error: hourErr } = await supabase
+    if (error) {
+      console.error(
+        "Attempt record insert failed:",
+        error.code,
+      );
+
+      return null;
+    }
+
+    return typeof data?.id === "string"
+      ? data.id
+      : null;
+  }
+
+  if (!recaptchaVerified) {
+    const attemptId = await recordAttempt(
+      false,
+      "recaptcha_failed",
+    );
+
+    if (!attemptId) {
+      return jsonResponse(
+        { error: "Unable to process submission" },
+        500,
+        origin,
+      );
+    }
+
+    return jsonResponse(
+      {
+        error:
+          "Spam verification failed. Please try again.",
+      },
+      403,
+      origin,
+    );
+  }
+
+  // ----------------------------------------------------------
+  // Rate limiting
+  // ----------------------------------------------------------
+
+  const oneHourAgo = new Date(
+    Date.now() - 60 * 60 * 1000,
+  ).toISOString();
+
+  const oneDayAgo = new Date(
+    Date.now() - 24 * 60 * 60 * 1000,
+  ).toISOString();
+
+  const {
+    count: acceptedLastHour,
+    error: hourlyRateLimitError,
+  } = await supabase
     .from("lead_submission_attempts")
-    .select("id", { count: "exact", head: true })
+    .select("id", {
+      count: "exact",
+      head: true,
+    })
     .eq("ip_hash", ipHash)
     .eq("accepted", true)
     .gte("attempted_at", oneHourAgo);
 
-  if (hourErr) {
-    console.error("Rate-limit hourly check failed:", hourErr.code);
-    return json({ error: "Server error. Please try again later." }, 500, origin);
+  if (hourlyRateLimitError) {
+    console.error(
+      "Hourly rate-limit query failed:",
+      hourlyRateLimitError.code,
+    );
+
+    return jsonResponse(
+      { error: "Unable to process submission" },
+      500,
+      origin,
+    );
   }
 
-  const { count: recentTotal, error: dayErr } = await supabase
+  const {
+    count: acceptedLastDay,
+    error: dailyRateLimitError,
+  } = await supabase
     .from("lead_submission_attempts")
-    .select("id", { count: "exact", head: true })
+    .select("id", {
+      count: "exact",
+      head: true,
+    })
     .eq("ip_hash", ipHash)
-    .gte("attempted_at", twentyFourHoursAgo);
+    .eq("accepted", true)
+    .gte("attempted_at", oneDayAgo);
 
-  if (dayErr) {
-    console.error("Rate-limit daily check failed:", dayErr.code);
-    return json({ error: "Server error. Please try again later." }, 500, origin);
+  if (dailyRateLimitError) {
+    console.error(
+      "Daily rate-limit query failed:",
+      dailyRateLimitError.code,
+    );
+
+    return jsonResponse(
+      { error: "Unable to process submission" },
+      500,
+      origin,
+    );
   }
 
-  if ((recentAccepted ?? 0) >= 3 || (recentTotal ?? 0) >= 5) {
-    const reason = (recentAccepted ?? 0) >= 3 ? "rate_limit_hour" : "rate_limit_day";
-    const { error: attemptErr } = await supabase.from("lead_submission_attempts").insert({
-      ip_hash: ipHash,
-      accepted: false,
-      rejection_reason: reason,
-    });
-    if (attemptErr) {
-      console.error("Attempt record insert failed:", attemptErr.code);
-      return json({ error: "Server error. Please try again later." }, 500, origin);
+  let rateLimitReason: string | null = null;
+
+  if (
+    (acceptedLastHour ?? 0) >=
+    MAX_ACCEPTED_PER_HOUR
+  ) {
+    rateLimitReason = "rate_limit_hour";
+  } else if (
+    (acceptedLastDay ?? 0) >=
+    MAX_ACCEPTED_PER_DAY
+  ) {
+    rateLimitReason = "rate_limit_day";
+  }
+
+  if (rateLimitReason) {
+    const attemptId = await recordAttempt(
+      false,
+      rateLimitReason,
+    );
+
+    if (!attemptId) {
+      return jsonResponse(
+        { error: "Unable to process submission" },
+        500,
+        origin,
+      );
     }
-    return json({ error: "Submission rejected. Please try again later." }, 429, origin);
+
+    return jsonResponse(
+      {
+        error:
+          "Too many submissions. Please try again later.",
+      },
+      429,
+      origin,
+    );
   }
 
-  // ── reCAPTCHA v2 verification ──────────────────────────────
-  let recaptchaOk = false;
-  try {
-    const verifyRes = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        secret: recaptchaSecret,
-        response: recaptcha_token,
-      }),
-    });
-    if (!verifyRes.ok) {
-      throw new Error("reCAPTCHA HTTP error");
-    }
-    const verifyData = await verifyRes.json() as {
-      success: boolean;
-      hostname?: string;
-    };
-    const validHostnames = [
-      "rodentsexterminsulationllc.com",
-      "www.rodentsexterminsulationllc.com",
-    ];
-    recaptchaOk =
-      verifyData.success === true &&
-      typeof verifyData.hostname === "string" &&
-      validHostnames.includes(verifyData.hostname);
-  } catch {
-    recaptchaOk = false;
-  }
+  // ----------------------------------------------------------
+  // Duplicate detection
+  // ----------------------------------------------------------
 
-  if (!recaptchaOk) {
-    const { error: attemptErr } = await supabase.from("lead_submission_attempts").insert({
-      ip_hash: ipHash,
-      accepted: false,
-      rejection_reason: "recaptcha_failed",
-    });
-    if (attemptErr) {
-      console.error("Attempt record insert failed:", attemptErr.code);
-      return json({ error: "Server error. Please try again later." }, 500, origin);
-    }
-    return json({ error: "Spam verification failed. Please try again." }, 403, origin);
-  }
+  const duplicateWindowStart = new Date(
+    Date.now() - 24 * 60 * 60 * 1000,
+  ).toISOString();
 
-  // ── Duplicate detection ────────────────────────────────────
-  let duplicateOf: string | null = null;
-  let isDuplicate = false;
-
-  const twentyFourHrsAgo = new Date(Date.now() - 86_400_000).toISOString();
-  const { data: recentLeads, error: dupErr } = await supabase
+  const {
+    data: recentLeads,
+    error: duplicateQueryError,
+  } = await supabase
     .from("leads")
     .select("id, normalized_phone, email, message")
-    .gte("created_at", twentyFourHrsAgo);
+    .gte("created_at", duplicateWindowStart);
 
-  if (dupErr) {
-    console.error("Duplicate detection query failed:", dupErr.code);
-    return json({ error: "Server error. Please try again later." }, 500, origin);
+  if (duplicateQueryError) {
+    console.error(
+      "Duplicate detection query failed:",
+      duplicateQueryError.code,
+    );
+
+    return jsonResponse(
+      { error: "Unable to process submission" },
+      500,
+      origin,
+    );
   }
 
-  if (recentLeads && recentLeads.length > 0) {
-    for (const rl of recentLeads) {
-      const phoneMatch = rl.normalized_phone && rl.normalized_phone === normalizedPhone;
-      const emailMatch = email && rl.email && rl.email.toLowerCase() === email;
-      const messageMatch =
-        rl.message && message &&
-        rl.message.length > 20 &&
-        (rl.message === message ||
-          (rl.message.includes(message) || message.includes(rl.message)));
-      if (phoneMatch || emailMatch) {
-        if (phoneMatch && (emailMatch || messageMatch)) {
-          isDuplicate = true;
-          duplicateOf = rl.id;
-          break;
-        }
-      }
+  let duplicateOf: string | null = null;
+
+  for (const recentLead of recentLeads ?? []) {
+    const phoneMatch =
+      typeof recentLead.normalized_phone === "string" &&
+      recentLead.normalized_phone === normalizedPhone;
+
+    const emailMatch =
+      Boolean(email) &&
+      typeof recentLead.email === "string" &&
+      recentLead.email.toLowerCase() === email;
+
+    const previousMessage =
+      typeof recentLead.message === "string"
+        ? recentLead.message.trim()
+        : "";
+
+    const messageMatch =
+      message.length > 20 &&
+      previousMessage.length > 20 &&
+      (
+        previousMessage === message ||
+        previousMessage.includes(message) ||
+        message.includes(previousMessage)
+      );
+
+    if (
+      phoneMatch &&
+      (emailMatch || messageMatch)
+    ) {
+      duplicateOf = recentLead.id;
+      break;
     }
   }
 
-  // ── Quality scoring ─────────────────────────────────────────
+  // ----------------------------------------------------------
+  // Transparent quality scoring
+  // ----------------------------------------------------------
+
   const spamReasons: string[] = [];
   let spamScore = 0;
 
-  // Timing signal
-  let elapsedSeconds: number | null = null;
-  if (form_started_at) {
-    const started = new Date(form_started_at as string).getTime();
-    if (!isNaN(started)) {
-      elapsedSeconds = (Date.now() - started) / 1000;
-      if (elapsedSeconds < 3) {
+  if (
+    typeof formStartedAt === "string" ||
+    typeof formStartedAt === "number"
+  ) {
+    const startedTimestamp = new Date(
+      formStartedAt,
+    ).getTime();
+
+    if (!Number.isNaN(startedTimestamp)) {
+      const elapsedSeconds =
+        (Date.now() - startedTimestamp) / 1000;
+
+      if (
+        elapsedSeconds >= 0 &&
+        elapsedSeconds < 3
+      ) {
         spamReasons.push("impossible_speed");
         spamScore += 20;
       }
     }
   }
 
-  // Random-looking name (all consonants or single char repeated)
-  if (/^[bcdfghjklmnpqrstvwxyz]{1,3}$/i.test(name) || /^(.)\1{2,}$/.test(name)) {
+  if (
+    /^[bcdfghjklmnpqrstvwxyz]{1,3}$/i.test(name) ||
+    /^(.)\1{2,}$/.test(name)
+  ) {
     spamReasons.push("random_name");
     spamScore += 15;
   }
 
-  // Gibberish message (no spaces or excessive repetition)
-  if (!/\s/.test(message) || /^(.)\1{10,}$/.test(message)) {
+  if (
+    !/\s/.test(message) ||
+    /^(.)\1{10,}$/.test(message)
+  ) {
     spamReasons.push("gibberish_message");
     spamScore += 20;
   }
 
-  // Solicitation language
-  const lowerMessage = message.toLowerCase();
-  for (const term of SOLICITATION_TERMS) {
-    if (lowerMessage.includes(term)) {
-      spamReasons.push("solicitation_language");
-      spamScore += 25;
-      break;
-    }
+  const lowercaseMessage = message.toLowerCase();
+
+  if (
+    SOLICITATION_TERMS.some((term) =>
+      lowercaseMessage.includes(term)
+    )
+  ) {
+    spamReasons.push("solicitation_language");
+    spamScore += 25;
   }
 
-  // Out-of-area ZIP (basic check — refine with real service area later)
-  const SERVICE_AREA_ZIPS: string[] = [];
-  let serviceAreaStatus: "inside" | "bordering" | "outside" | "unknown" = "unknown";
-  if (SERVICE_AREA_ZIPS.length > 0) {
-    serviceAreaStatus = SERVICE_AREA_ZIPS.includes(property_zip) ? "inside" : "outside";
+  // Exact service-area ZIP codes can be added later.
+  const serviceAreaZips: readonly string[] = [];
+
+  let serviceAreaStatus: ServiceAreaStatus =
+    "unknown";
+
+  if (serviceAreaZips.length > 0) {
+    serviceAreaStatus =
+      serviceAreaZips.includes(propertyZip)
+        ? "inside"
+        : "outside";
+
     if (serviceAreaStatus === "outside") {
       spamReasons.push("out_of_area");
       spamScore += 10;
     }
   }
 
-  if (isDuplicate) {
+  if (duplicateOf) {
     spamReasons.push("duplicate_contact");
     spamScore += 30;
   }
 
-  // ── Determine quality ──────────────────────────────────────
   let quality: Quality;
+
   if (spamScore >= 60) {
     quality = "spam";
-  } else if (isDuplicate) {
+  } else if (duplicateOf) {
     quality = "duplicate";
-  } else if (spamReasons.includes("solicitation_language")) {
+  } else if (
+    spamReasons.includes("solicitation_language")
+  ) {
     quality = "solicitation";
-  } else if (spamReasons.includes("out_of_area")) {
+  } else if (
+    spamReasons.includes("out_of_area")
+  ) {
     quality = "out_of_area";
   } else if (spamScore >= 25) {
     quality = "needs_review";
@@ -380,71 +850,98 @@ Deno.serve(async (req: Request) => {
     quality = "likely_customer";
   }
 
-  // ── Record accepted attempt ────────────────────────────────
-  const { error: attemptErr } = await supabase.from("lead_submission_attempts").insert({
-    ip_hash: ipHash,
-    accepted: true,
-    rejection_reason: null,
-  });
+  // ----------------------------------------------------------
+  // Record accepted attempt
+  // ----------------------------------------------------------
 
-  if (attemptErr) {
-    console.error("Attempt record insert failed:", attemptErr.code);
-    return json({ error: "Server error. Please try again later." }, 500, origin);
+  const acceptedAttemptId = await recordAttempt(
+    true,
+    null,
+  );
+
+  if (!acceptedAttemptId) {
+    return jsonResponse(
+      { error: "Unable to process submission" },
+      500,
+      origin,
+    );
   }
 
-  // ── Insert lead (service role bypasses RLS) ─────────────────
-  const { error: insertError } = await supabase.from("leads").insert({
-    name,
-    phone,
-    email: email || null,
-    service_name,
-    message,
-    property_zip,
-    normalized_phone: normalizedPhone,
-    landing_page,
-    page_path,
-    referrer,
-    status: "new",
-    quality,
-    spam_score: spamScore,
-    spam_reasons: spamReasons,
-    duplicate_of: duplicateOf,
-    service_area_status: serviceAreaStatus,
-  });
+  // ----------------------------------------------------------
+  // Insert lead using service-role access
+  // ----------------------------------------------------------
 
-  if (insertError) {
-    console.error("Lead insert failed:", insertError.code);
-    return json({ error: "Unable to submit. Please call us instead." }, 500, origin);
-  }
-
-  // ── Netlify notification mirror (fire-and-forget after lead is saved) ──
-  try {
-    const netlifyBody = new URLSearchParams({
-      "form-name": "contact",
+  const { error: leadInsertError } = await supabase
+    .from("leads")
+    .insert({
       name,
       phone,
-      email: email || "",
-      service_name,
+      email: email || null,
+      service_name: serviceName,
       message,
-      property_zip,
-      landing_page,
-      spam_score: String(spamScore),
+      property_zip: propertyZip,
+      normalized_phone: normalizedPhone,
+      landing_page: landingPage || null,
+      page_path: pagePath || null,
+      referrer: referrer || null,
+      status: "new",
+      quality,
+      spam_score: spamScore,
+      spam_reasons: spamReasons,
+      duplicate_of: duplicateOf,
+      service_area_status: serviceAreaStatus,
     });
 
-    const netlifyRes = await fetch("https://rodentsextermandinsulationllc.com/", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: netlifyBody.toString(),
-    });
+  if (leadInsertError) {
+    console.error(
+      "Lead insert failed:",
+      leadInsertError.code,
+    );
 
-    if (netlifyRes.ok) {
-      console.log("Netlify notification mirror sent");
-    } else {
-      console.log(`Netlify notification mirror failed: ${netlifyRes.status}`);
+    const { error: correctionError } =
+      await supabase
+        .from("lead_submission_attempts")
+        .update({
+          accepted: false,
+          rejection_reason: "lead_insert_failed",
+        })
+        .eq("id", acceptedAttemptId);
+
+    if (correctionError) {
+      console.error(
+        "Attempt correction failed:",
+        correctionError.code,
+      );
     }
-  } catch {
-    console.log("Netlify notification mirror failed: exception");
+
+    return jsonResponse(
+      {
+        error:
+          "Unable to submit. Please call us instead.",
+      },
+      500,
+      origin,
+    );
   }
 
-  return json({ success: true }, 201, origin);
+  await sendNetlifyMirror({
+    name,
+    phone,
+    email,
+    serviceName,
+    message,
+    propertyZip,
+    landingPage,
+    pagePath,
+    referrer,
+    quality,
+    spamScore,
+    serviceAreaStatus,
+  });
+
+  return jsonResponse(
+    { success: true },
+    201,
+    origin,
+  );
 });
