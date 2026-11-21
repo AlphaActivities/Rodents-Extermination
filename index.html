@@ -9,7 +9,16 @@
     <meta name="apple-mobile-web-app-title" content="Rodents Exterm" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>html,body{background:#fff;margin:0;padding:0}html.scroll-locked,html.scroll-locked body{overflow:hidden;touch-action:none}</style>
+    <script>
+      if (/^\/admin(?:\/|$)/.test(location.pathname)) {
+        document.documentElement.classList.add('admin-document');
+        const theme = document.createElement('meta');
+        theme.name = 'theme-color';
+        theme.content = '#0b0d13';
+        document.head.appendChild(theme);
+      }
+    </script>
+    <style>html,body{background:#fff;margin:0;padding:0}html.admin-document,html.admin-document body,html.admin-document #root{background:#0b0d13}html.scroll-locked,html.scroll-locked body{overflow:hidden;touch-action:none}</style>
     <script>
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       window.scrollTo(0, 0);
