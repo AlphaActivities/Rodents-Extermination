@@ -39,6 +39,11 @@ for (const engine of [webkit, chromium]) {
     for (const height of [844, 664, 844]) {
       await page.setViewportSize({ width: 390, height });
       await page.locator('main').evaluate(main => main.scrollTop = main.scrollHeight);
+      await page.waitForTimeout(350);
+      console.log(engine.name(), height, await page.evaluate(() => {
+        const box = selector => document.querySelector(selector).getBoundingClientRect().toJSON();
+        return { url: location.href, inner: [innerWidth, innerHeight], viewport: [visualViewport.width,visualViewport.height,visualViewport.offsetTop], shell: box('[data-app="admin"]'), root: box('#root'), main: box('main'), documentWidth: document.documentElement.scrollWidth };
+      }));
       await page.waitForFunction(() => {
         const shell = document.querySelector('[data-app="admin"]');
         return shell.getBoundingClientRect().bottom >= visualViewport.height - 1;
