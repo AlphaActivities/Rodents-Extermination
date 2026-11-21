@@ -22,6 +22,13 @@ class Review(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self):
+        if self.path.startswith('/capture/'):
+            name = self.path.split('/')[-1]
+            if name in ('before-swipe', 'after-swipe', 'reverse-swipe'):
+                command('xcrun', 'simctl', 'io', udid, 'screenshot', str(out / (name + '.png')))
+            self.send_response(204)
+            self.end_headers()
+            return
         route = self.path.split('?')[0]
         if route.startswith(('/rest/', '/auth/')):
             result = leads if route.endswith('/leads') else [user] if route.endswith('/admins') else user
@@ -50,66 +57,15 @@ if phone['state'] != 'Booted':
 command('xcrun', 'simctl', 'bootstatus', udid, '-b')
 server = http.server.ThreadingHTTPServer(('127.0.0.1', 4173), functools.partial(Review, directory='dist'))
 threading.Thread(target=server.serve_forever, daemon=True).start()
-command('sudo', 'safaridriver', '--enable')
-driver = subprocess.Popen(['safaridriver', '-p', '4444'])
-base = 'http://127.0.0.1:4444'
-def rpc(route, body=None):
-    req = urllib.request.Request(base + route, data=None if body is None else json.dumps(body).encode(),
-                                 headers={'Content-Type': 'application/json'})
-    try:
-        with urllib.request.urlopen(req, timeout=100) as resp:
-            return json.load(resp)['value']
-    except urllib.error.HTTPError as exc:
-        raise RuntimeError(exc.read().decode()) from exc
-
-def shot(name):
-    command('xcrun', 'simctl', 'io', udid, 'screenshot', str(out / (name + '.png')))
-
-try:
-    for _ in range(30):
-        try:
-            rpc('/status')
-            break
-        except OSError:
-            time.sleep(1)
-    session = rpc('/session', {'capabilities': {'alwaysMatch': {'browserName': 'Safari', 'platformName': 'iOS', 'pageLoadStrategy': 'none',
-                  'safari:useSimulator': True, 'safari:deviceUDID': udid}}})
-    base += '/session/' + session['sessionId']
-    def js(source, *args):
-        return rpc('/execute/sync', {'script': source, 'args': args})
-    fixture = {'user': user, 'access_token': 'offline.fixture.only', 'refresh_token': 'offline',
-               'expires_at': int(time.time()) + 3600, 'token_type': 'bearer'}
-    html = pathlib.Path('dist/index.html')
-    html.write_text(html.read_text().replace('<head>', '<head><script>localStorage.setItem("sb-127-auth-token",'
-        + json.dumps(json.dumps(fixture)) + ')</script>', 1))
-    rpc('/url', {'url': origin + '/admin/leads'})
-    for _ in range(40):
-        if js("return !!document.querySelector('main') && document.body.textContent.includes('Review inquiry 30')"):
-            break
-        time.sleep(.5)
-    else:
-        raise RuntimeError(js("return document.body.innerText.slice(0,900)"))
-    def measure():
-        data = js("""const main=document.querySelector('main'), shell=document.querySelector('[data-app="admin"]');
-          return {colors:[document.documentElement,document.body,document.querySelector('#root'),shell].map(el=>getComputedStyle(el).backgroundColor),
-            viewport:visualViewport.height,bottom:shell.getBoundingClientRect().bottom,scroll:main.scrollTop}""")
-        print(json.dumps(data), flush=True)
-        assert data['colors'] == ['rgb(11, 13, 19)'] * 4
-        assert data['bottom'] + 1 >= data['viewport']
-        return data
-    shot('dashboard-at-rest')
-    measure()
-    def swipe(y1,y2):
-        rpc('/actions', {'actions':[{'type':'pointer','id':'finger','parameters':{'pointerType':'touch'},'actions':[
-            {'type':'pointerMove','duration':0,'x':185,'y':y1},{'type':'pointerDown','button':0},
-            {'type':'pointerMove','duration':400,'x':185,'y':y2},{'type':'pointerUp','button':0}]}]})
-        time.sleep(1)
-    swipe(600,210)
-    assert measure()['scroll'] > 0
-    shot('dashboard-after-swipe')
-    swipe(230,580)
-    measure()
-    shot('dashboard-reverse-swipe')
-finally:
-    driver.terminate()
-    server.shutdown()
+fixture = {'user': user, 'access_token': 'offline.fixture.only', 'refresh_token': 'offline',
+           'expires_at': int(time.time()) + 3600, 'token_type': 'bearer'}
+html = pathlib.Path('dist/index.html')
+html.write_text(html.read_text().replace('<head>', '<head><script>localStorage.setItem("sb-127-auth-token",'
+    + json.dumps(json.dumps(fixture)) + ')</script>', 1))
+command('xcrun', 'simctl', 'openurl', udid, origin + '/admin/leads')
+time.sleep(12)
+command('xcrun', 'simctl', 'io', udid, 'screenshot', str(out / 'safari-at-rest.png'))
+subprocess.run(['xcodegen', 'generate', '--spec', 'scripts/qa/simulator/project.yml'], check=True)
+subprocess.run(['xcodebuild', 'test', '-project', 'scripts/qa/simulator/Canvas.xcodeproj',
+                '-scheme', 'Review', '-destination', 'platform=iOS Simulator,id=' + udid,
+                '-parallel-testing-enabled', 'NO', 'CODE_SIGNING_ALLOWED=NO'], check=True)

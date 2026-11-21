@@ -1,0 +1,21 @@
+name: Canvas
+options:
+  bundleIdPrefix: org.example.canvas
+settings:
+  GENERATE_INFOPLIST_FILE: YES
+  IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+targets:
+  Review:
+    type: application
+    platform: iOS
+    sources: [Review]
+    scheme:
+      testTargets: [CanvasUITests]
+  CanvasUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [Tests]
+    dependencies:
+      - target: Review
+    settings:
+      TEST_TARGET_NAME: Review
