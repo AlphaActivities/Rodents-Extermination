@@ -44,10 +44,17 @@ for (const engine of [webkit, chromium]) {
         const box = selector => document.querySelector(selector).getBoundingClientRect().toJSON();
         return { url: location.href, inner: [innerWidth, innerHeight], viewport: [visualViewport.width,visualViewport.height,visualViewport.offsetTop], shell: box('[data-app="admin"]'), root: box('#root'), main: box('main'), documentWidth: document.documentElement.scrollWidth };
       }));
-      await page.waitForFunction(() => {
-        const shell = document.querySelector('[data-app="admin"]');
-        return shell.getBoundingClientRect().bottom >= visualViewport.height - 1;
-      });
+      console.log('Size references', await page.evaluate(() => {
+        const probe = document.createElement('div');
+        document.body.appendChild(probe);
+        const heights = {};
+        for (const height of ['100vh','100dvh','100lvh','100svh','100%','auto']) {
+          Object.assign(probe.style, {position:'fixed',inset:'0',height,visibility:'hidden'});
+          heights[height] = probe.getBoundingClientRect().height;
+        }
+        probe.remove();
+        return heights;
+      }));
       const metrics = await page.evaluate(() => ({
         layers: ['html', 'body', '#root', '[data-app="admin"]'].map(selector =>
           getComputedStyle(document.querySelector(selector)).backgroundColor),
