@@ -1,0 +1,27 @@
+name: Admin document background
+on:
+  push:
+    branches: [preview/admin-canvas-checks]
+permissions:
+  contents: read
+jobs:
+  canvas:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://fixture.invalid
+          VITE_SUPABASE_ANON_KEY: offline-test-only
+      - run: npm install --no-save --package-lock=false playwright@1.55.0
+      - run: npx playwright install --with-deps webkit chromium
+      - run: node scripts/qa/admin-canvas.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: admin-canvas-screenshots
+          path: qa-screenshots/
