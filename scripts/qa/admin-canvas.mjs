@@ -39,22 +39,10 @@ for (const engine of [webkit, chromium]) {
     for (const height of [844, 664, 844]) {
       await page.setViewportSize({ width: 390, height });
       await page.locator('main').evaluate(main => main.scrollTop = main.scrollHeight);
-      await page.waitForTimeout(350);
-      console.log(engine.name(), height, await page.evaluate(() => {
-        const box = selector => document.querySelector(selector).getBoundingClientRect().toJSON();
-        return { url: location.href, inner: [innerWidth, innerHeight], viewport: [visualViewport.width,visualViewport.height,visualViewport.offsetTop], shell: box('[data-app="admin"]'), root: box('#root'), main: box('main'), documentWidth: document.documentElement.scrollWidth };
-      }));
-      console.log('Size references', await page.evaluate(() => {
-        const probe = document.createElement('div');
-        document.body.appendChild(probe);
-        const heights = {};
-        for (const height of ['100vh','100dvh','100lvh','100svh','100%','auto']) {
-          Object.assign(probe.style, {position:'fixed',inset:'0',height,visibility:'hidden'});
-          heights[height] = probe.getBoundingClientRect().height;
-        }
-        probe.remove();
-        return heights;
-      }));
+      await page.waitForFunction(height => {
+        const shell = document.querySelector('[data-app="admin"]').getBoundingClientRect();
+        return Math.abs(shell.bottom - height) <= 1 && Math.abs(shell.top) <= 1;
+      }, height);
       const metrics = await page.evaluate(() => ({
         layers: ['html', 'body', '#root', '[data-app="admin"]'].map(selector =>
           getComputedStyle(document.querySelector(selector)).backgroundColor),

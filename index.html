@@ -18,7 +18,13 @@
         document.head.appendChild(theme);
       }
     </script>
-    <style>html,body{background:#fff;margin:0;padding:0}html.admin-document,html.admin-document body,html.admin-document #root{background:#0b0d13}html.admin-document,html.admin-document body,html.admin-document #root{height:100%}html.admin-document #root>[data-app="admin"].h-screen{height:100%}html.scroll-locked,html.scroll-locked body{overflow:hidden;touch-action:none}</style>
+    <style>
+      html, body { background: #fff; margin: 0; padding: 0; }
+      html.admin-document, html.admin-document body, html.admin-document #root { background: #0b0d13; }
+      /* The dashboard scrolls inside main. Let the existing shell follow the viewport edges. */
+      html.admin-document #root > [data-app="admin"].h-screen { position: fixed; inset: 0; height: auto; }
+      html.scroll-locked, html.scroll-locked body { overflow: hidden; touch-action: none; }
+    </style>
     <script>
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       window.scrollTo(0, 0);
