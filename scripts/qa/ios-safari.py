@@ -72,16 +72,17 @@ try:
             break
         except OSError:
             time.sleep(1)
-    session = rpc('/session', {'capabilities': {'alwaysMatch': {'browserName': 'Safari', 'platformName': 'iOS',
+    session = rpc('/session', {'capabilities': {'alwaysMatch': {'browserName': 'Safari', 'platformName': 'iOS', 'pageLoadStrategy': 'none',
                   'safari:useSimulator': True, 'safari:deviceUDID': udid}}})
     base += '/session/' + session['sessionId']
     def js(source, *args):
         return rpc('/execute/sync', {'script': source, 'args': args})
+    fixture = {'user': user, 'access_token': 'offline.fixture.only', 'refresh_token': 'offline',
+               'expires_at': int(time.time()) + 3600, 'token_type': 'bearer'}
+    html = pathlib.Path('dist/index.html')
+    html.write_text(html.read_text().replace('<head>', '<head><script>localStorage.setItem("sb-127-auth-token",'
+        + json.dumps(json.dumps(fixture)) + ')</script>', 1))
     rpc('/url', {'url': origin + '/admin/leads'})
-    js("localStorage.setItem('sb-127-auth-token', JSON.stringify(arguments[0]))", {
-        'user': user, 'access_token': 'offline.fixture.only', 'refresh_token': 'offline',
-        'expires_at': int(time.time()) + 3600, 'token_type': 'bearer'})
-    rpc('/refresh', {})
     for _ in range(40):
         if js("return !!document.querySelector('main') && document.body.textContent.includes('Review inquiry 30')"):
             break
@@ -96,8 +97,8 @@ try:
         assert data['colors'] == ['rgb(11, 13, 19)'] * 4
         assert data['bottom'] + 1 >= data['viewport']
         return data
-    measure()
     shot('dashboard-at-rest')
+    measure()
     def swipe(y1,y2):
         rpc('/actions', {'actions':[{'type':'pointer','id':'finger','parameters':{'pointerType':'touch'},'actions':[
             {'type':'pointerMove','duration':0,'x':185,'y':y1},{'type':'pointerDown','button':0},
