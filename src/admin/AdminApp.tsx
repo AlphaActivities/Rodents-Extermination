@@ -5,7 +5,7 @@ import AdminLogin from './AdminLogin';
 import DashboardShell from './shell/DashboardShell';
 import LeadsPage from './leads/LeadsPage';
 
-type AuthState = 'loading' | 'unauthenticated' | 'transitioning' | 'authenticated';
+type AuthState = 'loading' | 'retry' | 'unauthenticated' | 'transitioning' | 'authenticated';
 
 function LoginSuccessOverlay() {
   return (
@@ -86,35 +86,27 @@ export default function AdminApp() {
     ])
   );
 
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        supabase
-          .from('admins')
-          .select('id')
-          .eq('id', data.session.user.id)
-          .maybeSingle()
-          .then(({ data: adminRow }) => {
-            if (adminRow) {
-              setAuthState('authenticated');
-            } else {
-              supabase.auth.signOut();
-              setAuthState('unauthenticated');
-            }
-          });
-      } else {
-        setAuthState('unauthenticated');
-      }
+    let active = true;
+    async function restore() {
+      try {
+        const {data, error} = await supabase.auth.getSession();
+        if (!active) return;
+        if (error) { setAuthState('retry'); return; }
+        if (!data.session) { setAuthState('unauthenticated'); return; }
+        const result = await supabase.from('admins').select('id').eq('id', data.session.user.id).maybeSingle();
+        if (!active) return;
+        if (result.error) { setAuthState('retry'); return; }
+        setAuthState(result.data ? 'authenticated' : 'unauthenticated');
+      } catch { if (active) setAuthState('retry'); }
+    }
+    void restore();
+    const {data:{subscription}} = supabase.auth.onAuthStateChange(event => {
+      if (event === 'SIGNED_OUT') { active = false; setAuthState('unauthenticated'); }
     });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        setAuthState('unauthenticated');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => { active = false; subscription.unsubscribe(); };
+  }, [attempt]);
 
   // Manual login callback: show premium transition before entering dashboard.
   // Session restore goes directly to 'authenticated' and never calls this.
@@ -123,6 +115,7 @@ export default function AdminApp() {
     setTimeout(() => setAuthState('authenticated'), 2900);
   };
 
+  if (authState === 'retry') return <main role="alert">Unable to verify admin access. <button onClick={() => {setAuthState('loading');setAttempt(value => value + 1);}}>Retry connection</button></main>;
   if (authState === 'loading') {
     return (
       <div

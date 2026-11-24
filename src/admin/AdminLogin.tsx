@@ -34,7 +34,12 @@ export default function AdminLogin({ onAuthenticated }: Props) {
       .eq('id', authData.user.id)
       .maybeSingle();
 
-    if (adminError || !adminRow) {
+    if (adminError) {
+      setError('Unable to verify access. Check your connection and retry.');
+      setLoading(false);
+      return;
+    }
+    if (!adminRow) {
       await supabase.auth.signOut();
       setError('Access denied. This account is not authorized.');
       setLoading(false);
