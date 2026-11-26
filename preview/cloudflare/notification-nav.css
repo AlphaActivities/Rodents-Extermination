@@ -1,3 +1,11 @@
-@media (max-width: 1023px) { [data-app="admin"] aside li:has([aria-disabled="true"]) { display: none; } [data-app="admin"] aside li a { min-height: 44px; } }
 a[data-attention]::after { content: attr(data-attention); display: inline-block; margin-inline-start: .25em; padding: .05em .36em; min-width: 1em; border-radius: 1em; background: #b74236; color: white; font-size: .75em; text-align: center; }
 .notification-attention-count { max-width: 46rem; padding: .25rem 1.25rem 1rem; margin: 0 auto; }
+
+.db-mobile-panel { width:min(256px,100vw); animation:db-drawer-enter 240ms ease-out; }
+.db-mobile-panel li:has([aria-disabled="true"]) { display:none; }
+.db-mobile-panel nav a { min-height:44px; padding:10px 12px; border-radius:12px; }
+.db-mobile-panel nav a[aria-current="page"] { box-shadow:inset 2px 0 var(--db-accent,#83b7e9); }
+.db-mobile-close { position:absolute; right:8px; top:9px; min-width:44px; min-height:44px; font-size:24px; color:var(--db-text-1); }
+@keyframes db-drawer-enter { from {transform:translateX(-100%)} to {transform:translateX(0)} }
+@media(prefers-reduced-motion:reduce) { .db-mobile-panel { animation:none; } }
+@media(width >= 1024px) { .db-topbar button[aria-label="Open navigation"] { display:none; } }

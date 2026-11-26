@@ -5,12 +5,28 @@ if(createHash('sha256').update(readFileSync('baseline.tar.gz')).digest('hex') !=
 mkdirSync('baseline',{recursive:true});
 execFileSync('tar',['-xzf','baseline.tar.gz','-C','baseline']);
 
+const htmlEntries = ['index.html','admin/index.html','admin/login/index.html','admin/leads/index.html'];
+const diagnostic = /<div role="note" style="[^"]*">Live data · Edits save<\/div>/g;
+for (const path of htmlEntries) {
+  const file = 'baseline/dist/' + path;
+  const before = readFileSync(file, 'utf8');
+  if ([...before.matchAll(diagnostic)].length !== 1) throw Error('Unexpected Juan diagnostic in ' + path);
+  const after = before.replace(diagnostic, '');
+  if (after.includes('Live data · Edits save')) throw Error('Juan diagnostic survived in ' + path);
+  writeFileSync(file, after);
+}
+
 const bundle = 'baseline/dist/assets/index-8ELzBVeS.js';
 const original = readFileSync(bundle,'utf8');
 const settings = 'label:"Settings",to:"/admin/settings",icon:Ux,disabled:!0';
 const nav = 'l.jsxs(nv,{to:n,title:e?r:void 0';
 if (original.split(settings).length!==2 || original.split(nav).length!==2) throw Error('Unexpected Juan staging navigation');
-const updated = original.replace(settings,'label:"Settings",to:"/admin/settings/",icon:Ux,disabled:!1')
+const mobilePanel = 'relative z-10 flex flex-col w-60 h-full';
+const mobileBrand = 'children:[l.jsx(gf,{}),l.jsx("nav"';
+if (original.split(mobilePanel).length !== 2 || original.split(mobileBrand).length !== 2) throw Error('Unexpected Juan drawer');
+const updated = original.replace(mobilePanel,'relative z-10 flex flex-col h-full db-mobile-panel')
+  .replace(mobileBrand,'children:[l.jsx(gf,{}),l.jsx("button",{type:"button",className:"db-mobile-close","aria-label":"Close navigation",onClick:n,children:"×"}),l.jsx("nav"')
+  .replace(settings,'label:"Settings",to:"/admin/settings/",icon:Ux,disabled:!1')
   .replace(nav,'l.jsxs(nv,{to:n,reloadDocument:n==="/admin/settings/",title:e?r:void 0');
 const versioned = bundle.replace('.js','-' + createHash('sha256').update(updated).digest('hex').slice(0,12) + '.js');
 writeFileSync(versioned,updated);
@@ -35,11 +51,12 @@ writeFileSync('notification-project.mjs', [
 ].map(([k,v])=>'export const '+k+'='+JSON.stringify(v)+';').join('\n'));
 copyFileSync('notification-badge.js','baseline/dist/notification-badge.js');
 copyFileSync('notification-nav.css','baseline/dist/notification-nav.css');
+copyFileSync('mobile-nav.js','baseline/dist/mobile-nav.js');
 for (const path of ['admin/index.html','admin/login/index.html','admin/leads/index.html',settingsPage]) {
   const file='baseline/dist/'+path;
   const html=readFileSync(file,'utf8');
   writeFileSync(file,html.replace('</head>','<link rel="stylesheet" href="/notification-nav.css"></head>')
-    .replace('</body>','<script defer src="/notification-badge.js"></script></body>'));
+    .replace('</body>','<script defer src="/notification-badge.js"></script><script defer src="/mobile-nav.js"></script></body>'));
 }
 
 const manifestPath = 'baseline/dist/site.webmanifest';

@@ -156,10 +156,11 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             aria-hidden="true"
           />
           <div
-            className="relative z-10 flex flex-col w-60 h-full"
+            className="relative z-10 flex flex-col h-full db-mobile-panel"
             style={{ background: 'var(--db-sidebar)', borderRight: '1px solid var(--db-border)' }}
           >
             <BrandMark />
+            <button type="button" className="db-mobile-close" aria-label="Close navigation" onClick={onCloseMobile}>×</button>
             <nav className="flex-1 py-4 overflow-y-auto" aria-label="Dashboard navigation">
               <NavList onNavigate={onCloseMobile} />
             </nav>

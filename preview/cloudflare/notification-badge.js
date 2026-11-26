@@ -15,7 +15,7 @@
       if (count) await navigator.setAppBadge?.(count); else await navigator.clearAppBadge?.();
       const indicator = document.getElementById('notification-attention-count');
       if (indicator) indicator.textContent = 'CRM attention count: ' + count;
-      const styles = darcy ? '.admin-nav' : 'aside';
+      const styles = darcy ? '.admin-nav' : ':is(aside,.db-mobile-panel)';
       for (const link of document.querySelectorAll(styles+' a[href^="/admin/settings"],'+styles+' a[href^="/admin/notifications"]')) {
         if (count) link.dataset.attention = String(count); else delete link.dataset.attention;
         link.setAttribute('aria-label', count ? 'Settings, '+count+' alerts' : 'Settings');
