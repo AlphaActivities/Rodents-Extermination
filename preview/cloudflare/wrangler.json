@@ -19,5 +19,13 @@
       "database_name": "rodents-admin-review-notifications",
       "database_id": "f83a3d95-812b-4df8-b44c-5ca2da8676dc"
     }
-  ]
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": false
+    }
+  }
 }
