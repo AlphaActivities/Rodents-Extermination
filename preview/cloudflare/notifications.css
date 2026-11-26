@@ -1,0 +1,10 @@
+:root { color-scheme: dark; font: 16px system-ui, sans-serif; color: #f4e9f5; background: #10243c; }
+body { margin: 0; }
+main { max-width: 46rem; margin: auto; padding: 1.25rem; }
+a { color: #bdd9ff; }
+label { display: block; margin: .8rem 0; }
+input, button { font: inherit; accent-color: #bdd9ff; }
+input:not([type=checkbox]), button { padding: .65rem; border: 1px solid #8fb6dd; border-radius: .5rem; background: #193554; color: inherit; }
+button { margin: .25rem .5rem .25rem 0; cursor: pointer; }
+button:disabled { opacity: .55; cursor: wait; }
+article, [role=status] { border-radius: .75rem; padding: .9rem; background: #18314c; }

@@ -15,12 +15,13 @@ interface NavItem {
   disabled?: boolean;
 }
 
+const staging = globalThis.location?.hostname === 'rodents-admin-review.gta-alpha-activities.workers.dev';
 const navItems: NavItem[] = [
   { label: 'Leads',     to: '/admin/leads',     icon: Users },
   { label: 'Analytics', to: '/admin/analytics', icon: BarChart2, disabled: true },
   { label: 'Jobs',      to: '/admin/jobs',       icon: Wrench,    disabled: true },
   { label: 'Customers', to: '/admin/customers',  icon: BookUser,  disabled: true },
-  { label: 'Settings',  to: '/admin/settings',   icon: Settings2, disabled: true },
+  { label: 'Settings',  to: '/admin/settings/',  icon: Settings2, disabled: !staging },
 ];
 
 interface NavListProps {
@@ -48,6 +49,7 @@ function NavList({ collapsed, onNavigate }: NavListProps) {
           ) : (
             <NavLink
               to={to}
+              reloadDocument={to === '/admin/settings/'}
               title={collapsed ? label : undefined}
               aria-label={label}
               className={({ isActive }) =>
